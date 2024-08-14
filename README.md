@@ -1,111 +1,66 @@
-# RISC Zero Rust Starter Template
+# Build BitVMX ZK-Proof
 
-Welcome to the RISC Zero Rust Starter Template! This template is intended to
-give you a starting point for building a project using the RISC Zero zkVM.
-Throughout the template (including in this README), you'll find comments
-labelled `TODO` in places where you'll need to make changes. To better
-understand the concepts behind this template, check out the [zkVM
-Overview][zkvm-overview].
 
-## Quick Start
+This project is allows to generate a Zero Knowledge Proof to be used with BitVMX.
+For this we have some tools that allows to split the three phases of a ZKP.
+1. Setup
+1. Proving
+1. Verification
 
-First, make sure [rustup] is installed. The
-[`rust-toolchain.toml`][rust-toolchain] file will be used by `cargo` to
-automatically install the correct version.
+## The Program to Verify
 
-To build all methods and execute the method within the zkVM, run the following
-command:
+This repo contains a dummy example of a ZKP using RISC0.
+The proof is inside [methods/guest/src](methods/guest/src)
 
-```bash
-cargo run
-```
+Inside [host/src](host/src) is the enviornment that allows to get the information required for the setup, execute the proof and verifiy it.
 
-This is an empty template, and so there is no expected output (until you modify
-the code).
+The first proof is a Stark, that is later converted into a Sanrk (groth16). 
 
-### Executing the project locally in development mode
+RISC0 implemented a circuit to verify any Stark. 
 
-During development, faster iteration upon code changes can be achieved by leveraging [dev-mode], we strongly suggest activating it during your early development phase. Furthermore, you might want to get insights into the execution statistics of your project, and this can be achieved by specifying the environment variable `RUST_LOG="[executor]=info"` before running your project.
 
-Put together, the command to run your project in development mode while getting execution statistics is:
+## Steps
 
-```bash
-RUST_LOG="[executor]=info" RISC0_DEV_MODE=1 cargo run
-```
+### Requirements
 
-### Running proofs remotely on Bonsai
+Currently RISC0 support for Groth16 is only available on x86/x64.
+Also some of the scripts are aimed to run in linux, and Docker is required to be installed.
 
-_Note: The Bonsai proving service is still in early Alpha; an API key is
-required for access. [Click here to request access][bonsai access]._
+This steps where tested on WSL (Ubuntu 22) on Windows 11
 
-If you have access to the URL and API key to Bonsai you can run your proofs
-remotely. To prove in Bonsai mode, invoke `cargo run` with two additional
-environment variables:
+1. Install rust
+1. Install risc zero / binutils / etc
 
-```bash
-BONSAI_API_KEY="YOUR_API_KEY" BONSAI_API_URL="BONSAI_URL" cargo run
-```
+### Setup Phase
 
-## How to create a project based on this template
+This command will build the program in guest, and dump it's unique and secure identifier. 
 
-Search this template for the string `TODO`, and make the necessary changes to
-implement the required feature described by the `TODO` comment. Some of these
-changes will be complex, and so we have a number of instructional resources to
-assist you in learning how to write your own code for the RISC Zero zkVM:
+`cargo run --release --bin host dump-id -o image_id.json`
 
-- The [RISC Zero Developer Docs][dev-docs] is a great place to get started.
-- Example projects are available in the [examples folder][examples] of
-  [`risc0`][risc0-repo] repository.
-- Reference documentation is available at [https://docs.rs][docs.rs], including
-  [`risc0-zkvm`][risc0-zkvm], [`cargo-risczero`][cargo-risczero],
-  [`risc0-build`][risc0-build], and [others][crates].
+This command will use the identifier and the expected journal result (in this are the bytes of a 1 in u32 representation)
 
-## Directory Structure
+`cargo run --release --bin verifier generate-claim -i image_id.json --journal 1,0,0,0`
 
-It is possible to organize the files for these components in various ways.
-However, in this starter template we use a standard directory structure for zkVM
-applications, which we think is a good starting point for your applications.
 
-```text
-project_name
-├── Cargo.toml
-├── host
-│   ├── Cargo.toml
-│   └── src
-│       └── main.rs                    <-- [Host code goes here]
-└── methods
-    ├── Cargo.toml
-    ├── build.rs
-    ├── guest
-    │   ├── Cargo.toml
-    │   └── src
-    │       └── method_name.rs         <-- [Guest code goes here]
-    └── src
-        └── lib.rs
-```
+### Proving
 
-## Video Tutorial
+The first step is to generate the stark proof, passing the expected input. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
 
-For a walk-through of how to build with this template, check out this [excerpt
-from our workshop at ZK HACK III][zkhack-iii].
+`cargo run --release --bin host prove-stark --input 50 --output stark-proof.bin`
 
-## Questions, Feedback, and Collaborations
+The second step is to generate the snark proof for the stark proof.
 
-We'd love to hear from you on [Discord][discord] or [Twitter][twitter].
+`cargo run --release --bin host prove-snark --input stark-proof.json --output snark-seal.json`
 
-[bonsai access]: https://bonsai.xyz/apply
-[cargo-risczero]: https://docs.rs/cargo-risczero
-[crates]: https://github.com/risc0/risc0/blob/main/README.md#rust-binaries
-[dev-docs]: https://dev.risczero.com
-[dev-mode]: https://dev.risczero.com/api/generating-proofs/dev-mode
-[discord]: https://discord.gg/risczero
-[docs.rs]: https://docs.rs/releases/search?query=risc0
-[examples]: https://github.com/risc0/risc0/tree/main/examples
-[risc0-build]: https://docs.rs/risc0-build
-[risc0-repo]: https://www.github.com/risc0/risc0
-[risc0-zkvm]: https://docs.rs/risc0-zkvm
-[rustup]: https://rustup.rs
-[rust-toolchain]: rust-toolchain.toml
-[twitter]: https://twitter.com/risczero
-[zkvm-overview]: https://dev.risczero.com/zkvm
-[zkhack-iii]: https://www.youtube.com/watch?v=Yg_BGqj_6lg&list=PLcPzhUaCxlCgig7ofeARMPwQ8vbuD6hC5&index=5
+### Verifiying
+
+`cargo run --release --bin verifier generate-claim -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
+
+
+
+
+**TODO:**
+- Generate on setup the gorth16 c verifier
+- Split the input
+
+
