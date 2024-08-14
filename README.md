@@ -35,26 +35,26 @@ This steps where tested on WSL (Ubuntu 22) on Windows 11
 
 This command will build the program in guest, and dump it's unique and secure identifier. 
 
-`cargo run --release --bin host dump-id -o image_id.json`
+`cargo run --release --bin host -- dump-id -o image_id.json`
 
 This command will use the identifier and the expected journal result (in this are the bytes of a 1 in u32 representation)
 
-`cargo run --release --bin verifier generate-claim -i image_id.json --journal 1,0,0,0`
+`cargo run --release --bin verifier -- generate-claim -i image_id.json --journal 1,0,0,0`
 
 
 ### Proving
 
 The first step is to generate the stark proof, passing the expected input. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
 
-`cargo run --release --bin host prove-stark --input 50 --output stark-proof.bin`
+`cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin`
 
 The second step is to generate the snark proof for the stark proof.
 
-`cargo run --release --bin host prove-snark --input stark-proof.json --output snark-seal.json`
+`cargo run --release --bin host -- prove-snark --input stark-proof.bin --output snark-seal.json`
 
 ### Verifiying
 
-`cargo run --release --bin verifier generate-claim -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
+`cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
 
 
 
