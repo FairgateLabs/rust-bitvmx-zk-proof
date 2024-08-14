@@ -3,7 +3,7 @@ pub mod cli;
 
 use risc0_groth16::Verifier;
 use risc0_groth16::{fr_from_hex_string, split_digest, Seal};
-use risc0_zkvm::{Groth16ReceiptVerifierParameters, VerifierContext};
+use risc0_zkvm::{Groth16ReceiptVerifierParameters, MaybePruned, SystemState, VerifierContext};
 use risc0_zkvm::sha::Digestible;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkp::verify::VerificationError;
@@ -17,15 +17,13 @@ use crate::format::*;
 
 
 
-pub fn generate_proof_bytes_from_seal(seal: Seal) {
+pub fn generate_proof_bytes_from_seal(seal: Seal) -> Vec<Vec<u8>> {
 
     let bytes_proof_a = g1_to_c_bytes(seal.a.clone());
     let bytes_proof_b = g2_to_c_bytes(seal.b.clone());
     let bytes_proof_c = g1_to_c_bytes(seal.c.clone());
 
-    println!("Proof A: {:?}", bytes_proof_a);
-    println!("Proof B: {:?}", bytes_proof_b);
-    println!("Proof C: {:?}", bytes_proof_c);
+    vec![bytes_proof_a, bytes_proof_b, bytes_proof_c]
 
 }
 
@@ -45,41 +43,20 @@ fn get_default_parameters() -> Result<Groth16ReceiptVerifierParameters, Verifica
 }
 
 fn verify(image_id: &String, journal: &Vec<u8>, seal_fname: &String) -> Result<(), VerificationError> {
+
     let claim = get_claim(image_id, journal);
     let seal = get_seal(&seal_fname);
-
-    let result = claim.digest();
-    println!("{}", hex::encode(result.as_bytes()));
-
     let params = get_default_parameters()?;
 
-    println!("control root: {:?}", params.control_root);
-    println!(": {:?}", params.verifying_key);
-
-    let (a0, a1) =
-        split_digest(params.control_root).map_err(|_| VerificationError::ReceiptFormatError)?;
+    let (a0, a1) = split_digest(params.control_root).map_err(|_| VerificationError::ReceiptFormatError)?;
     
-    
-    println!("a0: {:?}", a0);
-    println!("a1: {:?}", a1);
-
-    let (a00, a11) = split_digest_custom(params.control_root);
-    println!("a00: {:?}", a00);
-    println!("a11: {:?}", a11);
-
     let (c0, c1) = split_digest(claim.digest())
         .map_err(|_| VerificationError::ReceiptFormatError)?;
-
-
-    println!("c0: {:?}", c0);
-    println!("c1: {:?}", c1);
 
     let mut id_bn554: Digest = params.bn254_control_id;
     id_bn554.as_mut_bytes().reverse();
     let id_bn254_fr = fr_from_hex_string(&hex::encode(id_bn554))
         .map_err(|_| VerificationError::ReceiptFormatError)?;
-
-    println!("id_bn254_fr: {:?}", id_bn254_fr);
 
     Verifier::new(
         &seal,
@@ -138,6 +115,9 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
     template = template.replace("four_u16", &bytes_to_str(&4u16.to_le_bytes()));
     template = template.replace("zero_u32", &bytes_to_str(&0u32.to_le_bytes()));
 
+    let claim_post = MaybePruned::Value(SystemState { pc: 0, merkle_root: Digest::ZERO, }).digest();
+    template = template.replace("claim_post", &bytes_to_str(&claim_post.as_bytes()));
+
     let vk = get_verifying_key_clone(&params);
     template = template.replace("vk_alpha_g1",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.alpha_g1))))));
     template = template.replace("vk_beta_g2",   &bytes_to_str(&g2_to_c_bytes(g2_strings_to_vec(split_g2(format!("{:?}",vk.beta_g2))))));
@@ -159,3 +139,19 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
 }
 
 
+
+pub fn template_proof( journal: &Vec<u8>, seal: &String, template_fname: &String, output_fname: &String) {
+
+    let mut template = read_to_string(template_fname).unwrap(); 
+
+    let seal = get_seal(seal);
+    let proofs = generate_proof_bytes_from_seal(seal);
+
+    template = template.replace("proof_a", &bytes_to_str(&proofs[0]));
+    template = template.replace("proof_b", &bytes_to_str(&proofs[1]));
+    template = template.replace("proof_c", &bytes_to_str(&proofs[2]));
+    template = template.replace("journalx", &bytes_to_str(&journal));
+
+    write(output_fname, template).unwrap();
+
+}

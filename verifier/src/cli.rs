@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::{template_setup, get_seal, generate_proof_bytes_from_seal, show_claim, verify};
+use crate::{template_setup, show_claim, verify, template_proof};
 use risc0_zkp::verify::VerificationError;
 
 
@@ -41,13 +41,6 @@ enum Commands {
         seal: String,
     },
 
-    GenerateProofBytes {
-        /// Groth16 proof file
-        #[arg(short, long, value_name = "FILE", required=true)]
-        seal: String,
-    },
-
-
     TemplateSetup {
 
         /// File name with the dumped image id
@@ -64,6 +57,25 @@ enum Commands {
 
     },
 
+    TemplateProof {
+        
+        /// Expected journal produces by the stark
+        #[arg(short, long, value_delimiter=',', num_args = 1.., required=true)]
+        journal: Vec<u8>,
+
+        /// Groth16 proof file
+        #[arg(short, long, value_name = "FILE", required=true)]
+        seal: String,
+
+        /// Initial template file
+        #[arg(short, long, value_name = "FILE", required=true)]
+        template: String,
+
+        /// Output file
+        #[arg(short, long, value_name = "FILE", required=true)]
+        output: String,
+
+    },
 }
 
 pub fn run() -> Result<(), VerificationError> {
@@ -77,13 +89,13 @@ pub fn run() -> Result<(), VerificationError> {
         Some(Commands::Verify { image_id, journal, seal} ) => {
             verify(image_id, journal, seal)?;
         },
-        Some(Commands::GenerateProofBytes { seal }) => {
-            let seal = get_seal(seal);
-            generate_proof_bytes_from_seal(seal);
-        },
         Some(Commands::TemplateSetup { image_id, template, output }) => {
             template_setup(image_id, template, output)
-        }
+        },
+        Some(Commands::TemplateProof { journal, seal, template, output}) => {
+            template_proof(journal, seal, template, output)
+        },
+
         None => {
             println!("No command provided");
         }

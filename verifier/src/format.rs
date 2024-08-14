@@ -3,8 +3,6 @@ use risc0_groth16::Seal;
 use risc0_zkvm::{MaybePruned, Receipt, ReceiptClaim};
 use risc0_zkp::core::digest::Digest;
 use std::io::Read;
-use ark_bn254::{G1Affine, G2Affine};
-use ark_serialize::CanonicalDeserialize;
 
 use num_bigint::BigInt;
 use std::str::FromStr;
@@ -156,31 +154,3 @@ pub fn split_g2(data: String) -> Vec<String> {
     results
 }
 
-
-
-// Deserialize an element over the G1 group from bytes in big-endian format
-pub(crate) fn g1_from_bytes(elem: &[Vec<u8>]) -> G1Affine {
-    let g1_affine: Vec<u8> = elem[0]
-        .iter()
-        .rev()
-        .chain(elem[1].iter().rev())
-        .cloned()
-        .collect();
-
-    G1Affine::deserialize_uncompressed(&*g1_affine).unwrap()
-}
-
-
-// Deserialize an element over the G2 group from bytes in big-endian format
-pub(crate) fn g2_from_bytes(elem: &[Vec<Vec<u8>>]) -> G2Affine {
-    let g2_affine: Vec<u8> = elem[0][1]
-        .iter()
-        .rev()
-        .chain(elem[0][0].iter().rev())
-        .chain(elem[1][1].iter().rev())
-        .chain(elem[1][0].iter().rev())
-        .cloned()
-        .collect();
-
-    G2Affine::deserialize_uncompressed(&*g2_affine).unwrap()
-}
