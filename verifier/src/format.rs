@@ -108,7 +108,7 @@ pub fn g2_to_c_bytes(g2: Vec<Vec<Vec<u8>>>) -> Vec<u8> {
     bytes_g2
 }
 
-pub fn split_g1(data: String) -> (String, String) {
+pub fn split_g1(data: String) -> Vec<String> {
     let parts: Vec<&str> = data
         .trim_matches(|c| c == '(' || c == ')')
         .split(',')
@@ -116,16 +116,16 @@ pub fn split_g1(data: String) -> (String, String) {
 
     let first_part = parts[0].trim();
     let second_part = parts[1].trim();
-    (first_part.to_string(), second_part.to_string())
+    vec![first_part.to_string(), second_part.to_string()]
 }
 
-pub fn g1_strings_to_vec(x: &str, y: &str) -> Vec<Vec<u8>> {
-   vec![from_u256_bigint(x), from_u256_bigint(y)]
+pub fn g1_strings_to_vec(data: Vec<String>) -> Vec<Vec<u8>> {
+   vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])]
 }
 
-pub fn g2_strings_to_vec(x1: &str, x2:&str, y1: &str, y2: &str) -> Vec<Vec<Vec<u8>>> {
-   vec![vec![from_u256_bigint(x1), from_u256_bigint(x2)],
-        vec![from_u256_bigint(y1), from_u256_bigint(y2)]]
+pub fn g2_strings_to_vec(data: Vec<String>) -> Vec<Vec<Vec<u8>>> {
+   vec![vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])],
+        vec![from_u256_bigint(&data[2]), from_u256_bigint(&data[3])]]
 }
 
 pub fn split_g2(data: String) -> Vec<String> {

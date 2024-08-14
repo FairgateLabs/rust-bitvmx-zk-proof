@@ -107,6 +107,15 @@ macro_rules! sha256_hash {
     }};
 }
 
+// Function to safely return a clone of the private field
+fn get_verifying_key_clone(params: &Groth16ReceiptVerifierParameters) -> ark_groth16::VerifyingKey<Bn254> {
+    unsafe {
+        let priv_verifying: *const ark_groth16::VerifyingKey<Bn254> = &params.verifying_key as *const _ as *const ark_groth16::VerifyingKey<Bn254>;
+        (*priv_verifying).clone()
+    }
+}
+
+
 pub fn template_setup(image_id_fname: &String, template_fname: &String, output_fname: &String) {
 
     let mut template = read_to_string(template_fname).unwrap(); 
@@ -129,39 +138,21 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
     template = template.replace("four_u16", &bytes_to_str(&4u16.to_le_bytes()));
     template = template.replace("zero_u32", &bytes_to_str(&0u32.to_le_bytes()));
 
+    let vk = get_verifying_key_clone(&params);
+    template = template.replace("vk_alpha_g1",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.alpha_g1))))));
+    template = template.replace("vk_beta_g2",   &bytes_to_str(&g2_to_c_bytes(g2_strings_to_vec(split_g2(format!("{:?}",vk.beta_g2))))));
+    template = template.replace("vk_gamma_g2",  &bytes_to_str(&g2_to_c_bytes(g2_strings_to_vec(split_g2(format!("{:?}",vk.gamma_g2))))));
+    template = template.replace("vk_delta_g2",  &bytes_to_str(&g2_to_c_bytes(g2_strings_to_vec(split_g2(format!("{:?}",vk.delta_g2))))));
+    template = template.replace("vk_gamma_abc_0",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[0]))))));
+    template = template.replace("vk_gamma_abc_1",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[1]))))));
+    template = template.replace("vk_gamma_abc_2",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[2]))))));
+    template = template.replace("vk_gamma_abc_3",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[3]))))));
+    template = template.replace("vk_gamma_abc_4",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[4]))))));
+
     //only variable part, the rest could be hardcoded
     //interesting to keep it in this way as claim generation could change over time (risc0 versioning)
     template = template.replace("claim_pre", &bytes_to_str(&claim_pre.as_bytes()));
 
-    //println!("{:?}", params.verifying_key.0.alpha_g1);
-    unsafe {
-        let priv_verifying: *const ark_groth16::VerifyingKey<Bn254> = &params.verifying_key as *const _ as *const ark_groth16::VerifyingKey<Bn254>;
-        //println!("{:?}", (*priv_verifying).alpha_g1);
-        //println!("{:?}", (*priv_verifying).alpha_g1);
-        //let data = format!("{:?}", (*priv_verifying).alpha_g1); 
-        let (a,b) = split_g1(format!("{:?}",  (*priv_verifying).alpha_g1));
-        println!("{} {}", a,b);
-        let alpha_g1_vec = g1_strings_to_vec(&a, &b); 
-        println!("{:?}", alpha_g1_vec);
-        let g1 = g1_from_bytes(&alpha_g1_vec); //.unwrap();
-        let (a,b) = split_g1(format!("{:?}",  g1));
-        println!("{} {}", a,b);
-        println!("{:?}", g1_to_c_bytes(alpha_g1_vec.clone()));
-
-        println!("========================");
-
-        println!("{:?}", (*priv_verifying).beta_g2);
-        let ret = split_g2(format!("{:?}",  (*priv_verifying).beta_g2));
-        let g2_vec = g2_strings_to_vec(&ret[0], &ret[1], &ret[2], &ret[3]);
-        println!("{:?}", g2_vec);
-        let g2 = g2_from_bytes(&g2_vec); //.unwrap();
-        println!("{:?}", g2);
-
-        println!("{:?}", g2_to_c_bytes(g2_vec.clone()));
-
-
-        //let a = vec![from_u256(&proof.pi_a[0])?, from_u256(&proof.pi_a[1])?];
-    }
 
     write(output_fname, template).unwrap();
 
