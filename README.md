@@ -1,6 +1,5 @@
 # Build BitVMX ZK-Proof
 
-
 This project is allows to generate a Zero Knowledge Proof to be used with BitVMX.
 For this we have some tools that allows to split the three phases of a ZKP.
 1. Setup
@@ -26,10 +25,31 @@ RISC0 implemented a circuit to verify any Stark.
 Currently RISC0 support for Groth16 is only available on x86/x64.
 Also some of the scripts are aimed to run in linux, and Docker is required to be installed.
 
-This steps where tested on WSL (Ubuntu 22) on Windows 11
+This steps where tested on WSL (Ubuntu 22) on Windows 11 and also in Azure Standard E2s v3
 
-1. Install rust
-1. Install risc zero / binutils / etc
+#### Clone repo
+`clone git@github.com:FairgateLabs/rust-bitvmx-zk-proof.git`
+
+#### Install docker
+`sudo snap install docker`
+
+#### Install rust
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+Option: (1) standard installation
+`bash` (or logout/login to update paths)
+
+#### build tools
+`sudo apt install - y build-essential`
+`sudo apt install  -y pkg-config libssl-dev`
+
+#### install risczero
+`curl -L https://risczero.com/install | bash`
+`source /home/azureuser/.bashrc` (to update path)
+`rzup --version 1.0.5`
+
+`cargo install cargo-binstall`
+`cargo binstall cargo-risczero`
+`cargo risczero install`
 
 ### Setup Phase
 
@@ -63,10 +83,5 @@ The second step is to generate the snark proof for the stark proof.
 
 `cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal snark-seal.json -t intermediate.h -o constants.h`
 
-
-
-**TODO:**
-- Generate on setup the gorth16 c verifier
-- Split the input
 
 
