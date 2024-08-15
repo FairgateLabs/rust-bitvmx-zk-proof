@@ -29,7 +29,8 @@ pub fn generate_proof_bytes_from_seal(seal: Seal) -> Vec<Vec<u8>> {
 
 fn show_claim(image_id: &String, journal: &Vec<u8>) {
     let claim = get_claim(image_id, journal);
-    println!("Claim: {:?}", claim);
+    let digest = claim.digest();
+    println!("Claim: {:?} {:?}", claim, digest);
 }
 
 fn get_default_parameters() -> Result<Groth16ReceiptVerifierParameters, VerificationError> {
@@ -53,9 +54,9 @@ fn verify(image_id: &String, journal: &Vec<u8>, seal_fname: &String) -> Result<(
     let (c0, c1) = split_digest(claim.digest())
         .map_err(|_| VerificationError::ReceiptFormatError)?;
 
-    let mut id_bn554: Digest = params.bn254_control_id;
-    id_bn554.as_mut_bytes().reverse();
-    let id_bn254_fr = fr_from_hex_string(&hex::encode(id_bn554))
+    let mut id_bn254: Digest = params.bn254_control_id;
+    id_bn254.as_mut_bytes().reverse();
+    let id_bn254_fr = fr_from_hex_string(&hex::encode(id_bn254))
         .map_err(|_| VerificationError::ReceiptFormatError)?;
 
     Verifier::new(
@@ -107,6 +108,12 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
     template = template.replace("public_input_0", &bytes_to_str(&a0.to_le_bytes()));
     template = template.replace("public_input_1", &bytes_to_str(&a1.to_le_bytes()));
 
+    let id_bn254: Digest = params.bn254_control_id;
+    let (bna, bnb) = split_digest_custom(id_bn254);
+    template = template.replace("public_input_4a", &bytes_to_str(&bna.to_le_bytes()));
+    template = template.replace("public_input_4b", &bytes_to_str(&bnb.to_le_bytes()));
+
+
     template = template.replace("receipt_claim_tag", &bytes_to_str(&sha256_hash!("risc0.ReceiptClaim".as_bytes())));
     template = template.replace("output_tag", &bytes_to_str(&sha256_hash!("risc0.Output".as_bytes())));
     template = template.replace("claim_input", &bytes_to_str(&[0u8; 32]));
@@ -128,6 +135,7 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
     template = template.replace("vk_gamma_abc_2",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[2]))))));
     template = template.replace("vk_gamma_abc_3",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[3]))))));
     template = template.replace("vk_gamma_abc_4",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[4]))))));
+    template = template.replace("vk_gamma_abc_5",  &bytes_to_str(&g1_to_c_bytes(g1_strings_to_vec(split_g1(format!("{:?}",vk.gamma_abc_g1[5]))))));
 
     //only variable part, the rest could be hardcoded
     //interesting to keep it in this way as claim generation could change over time (risc0 versioning)
