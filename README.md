@@ -13,9 +13,7 @@ The proof is inside [methods/guest/src](methods/guest/src)
 
 Inside [host/src](host/src) is the enviornment that allows to get the information required for the setup, execute the proof and verifiy it.
 
-The first proof is a Stark, that is later converted into a Sanrk (groth16). 
-
-RISC0 implemented a circuit to verify any Stark. 
+The first proof is a Stark, that is later converted into a Snark (groth16). 
 
 
 ## Steps
