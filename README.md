@@ -41,6 +41,9 @@ This command will use the identifier and the expected journal result (in this ar
 
 `cargo run --release --bin verifier -- generate-claim -i image_id.json --journal 1,0,0,0`
 
+### Template Setup
+
+`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o intermediate.h`
 
 ### Proving
 
@@ -56,6 +59,9 @@ The second step is to generate the snark proof for the stark proof.
 
 `cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
 
+### Template Proof (this part will be replaced with the proof to be provided as input)
+
+`cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal snark-seal.json -t intermediate.h -o constants.h`
 
 
 
