@@ -34,19 +34,28 @@ This steps where tested on WSL (Ubuntu 22) on Windows 11 and also in Azure Stand
 #### Install rust
 `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 Option: (1) standard installation
+
 `bash` (or logout/login to update paths)
 
 #### build tools
-`sudo apt install - y build-essential`
-`sudo apt install  -y pkg-config libssl-dev`
+`sudo apt-get update`
+
+`sudo apt -y install build-essential`
+
+`sudo apt -y install pkg-config libssl-dev`
+
 
 #### install risczero
 `curl -L https://risczero.com/install | bash`
+
 `source /home/azureuser/.bashrc` (to update path)
+
 `rzup --version 1.0.5`
 
 `cargo install cargo-binstall`
+
 `cargo binstall cargo-risczero`
+
 `cargo risczero install`
 
 ### Setup Phase
