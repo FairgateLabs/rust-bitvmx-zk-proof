@@ -50,11 +50,11 @@ Option: (1) standard installation
 
 `source /home/azureuser/.bashrc` (to update path)
 
-`rzup --version 1.0.5`
+~~`rzup --version 1.0.5`~~
 
 `cargo install cargo-binstall`
 
-`cargo binstall cargo-risczero`
+`cargo binstall cargo-risczero --version 1.0.5`
 
 `cargo risczero install`
 
