@@ -48,7 +48,7 @@ Option: (1) standard installation
 #### install risczero
 `curl -L https://risczero.com/install | bash`
 
-`source /home/azureuser/.bashrc` (to update path)
+`source ~/.bashrc` (to update path)
 
 ~~`rzup --version 1.0.5`~~
 
