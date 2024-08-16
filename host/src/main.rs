@@ -1,6 +1,7 @@
 use host::{prove_stark, verify_stark, prove_snark};
 use clap::{Parser, Subcommand};
 use json::JsonValue;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -54,9 +55,17 @@ enum Commands {
 
 }
 
+fn init_logging() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+}
+
 
 
 fn main() {
+
+    init_logging();
 
     let cli = Cli::parse();
 
