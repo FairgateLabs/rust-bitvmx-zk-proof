@@ -82,7 +82,11 @@ The first step is to generate the stark proof, passing the expected input. In th
 
 The second step is to generate the snark proof for the stark proof.
 
+Check running `docker` works fine. In that case run this command:
 `cargo run --release --bin host -- prove-snark --input stark-proof.bin --output snark-seal.json`
+
+If not, try runnign it in this way:
+`sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --output snark-seal.json`
 
 ### Verifiying
 
