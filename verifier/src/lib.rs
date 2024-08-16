@@ -10,6 +10,7 @@ use risc0_zkp::verify::VerificationError;
 use hex;
 use sha2::{Sha256, Digest as sha2digest};
 use std::fs::{read_to_string, write};
+use std::vec;
 use ark_bn254::Bn254;
 
 
@@ -94,7 +95,7 @@ fn get_verifying_key_clone(params: &Groth16ReceiptVerifierParameters) -> ark_gro
 }
 
 
-pub fn template_setup(image_id_fname: &String, template_fname: &String, output_fname: &String) {
+pub fn template_setup(image_id_fname: &String, template_fname: &String, output_fname: &String, zero_proof: bool) {
 
     let mut template = read_to_string(template_fname).unwrap(); 
 
@@ -141,6 +142,13 @@ pub fn template_setup(image_id_fname: &String, template_fname: &String, output_f
     //interesting to keep it in this way as claim generation could change over time (risc0 versioning)
     template = template.replace("claim_pre", &bytes_to_str(&claim_pre.as_bytes()));
 
+    if zero_proof {
+        template = template.replace("journalx", &bytes_to_str( vec![0u8; 4].as_slice()));
+        template = template.replace("proof_a", &bytes_to_str( vec![0u8; 32].as_slice()));
+        template = template.replace("proof_b", &bytes_to_str( vec![0u8; 64].as_slice()));
+        template = template.replace("proof_c", &bytes_to_str( vec![0u8; 32].as_slice()));
+    }
+
 
     write(output_fname, template).unwrap();
 
@@ -162,4 +170,17 @@ pub fn template_proof( journal: &Vec<u8>, seal: &String, template_fname: &String
 
     write(output_fname, template).unwrap();
 
+}
+
+pub fn proof_as_input( journal: &Vec<u8>, seal: &String) {
+    let seal = get_seal(seal);
+    let proofs = generate_proof_bytes_from_seal(seal);
+
+    //hex encode journal and proofs
+    let journal_hex = hex::encode(journal);
+    print!("input: {}", journal_hex);
+    for proof in proofs {
+        let proof_hex = hex::encode(proof);
+        print!("{}", proof_hex);
+    }
 }

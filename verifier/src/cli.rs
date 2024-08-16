@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::{template_setup, show_claim, verify, template_proof};
+use crate::{proof_as_input, show_claim, template_proof, template_setup, verify};
 use risc0_zkp::verify::VerificationError;
 
 
@@ -55,6 +55,10 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", required=true)]
         output: String,
 
+        /// Put in zero the journal and the proof
+        #[arg(short, long, default_value = "false")]
+        zero_proof: bool,
+
     },
 
     TemplateProof {
@@ -76,6 +80,16 @@ enum Commands {
         output: String,
 
     },
+
+    ProofAsInput {
+        /// Expected journal produces by the stark
+        #[arg(short, long, value_delimiter=',', num_args = 1.., required=true)]
+        journal: Vec<u8>,
+
+        /// Groth16 proof file
+        #[arg(short, long, value_name = "FILE", required=true)]
+        seal: String,
+    },
 }
 
 pub fn run() -> Result<(), VerificationError> {
@@ -89,11 +103,14 @@ pub fn run() -> Result<(), VerificationError> {
         Some(Commands::Verify { image_id, journal, seal} ) => {
             verify(image_id, journal, seal)?;
         },
-        Some(Commands::TemplateSetup { image_id, template, output }) => {
-            template_setup(image_id, template, output)
+        Some(Commands::TemplateSetup { image_id, template, output, zero_proof }) => {
+            template_setup(image_id, template, output, *zero_proof)
         },
         Some(Commands::TemplateProof { journal, seal, template, output}) => {
             template_proof(journal, seal, template, output)
+        },
+        Some(Commands::ProofAsInput { journal, seal}) => {
+            proof_as_input(journal, seal)
         },
 
         None => {

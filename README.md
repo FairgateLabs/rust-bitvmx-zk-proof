@@ -72,7 +72,11 @@ This command will use the identifier and the expected journal result (in this ar
 
 ### Template Setup
 
+If the proof will be inserted in the constants.h directly:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o intermediate.h`
+
+If the proof will be provided as input to the program:
+`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o constants.h --zero-proof`
 
 ### Proving
 
@@ -92,9 +96,11 @@ If not, try runnign it in this way:
 
 `cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
 
-### Template Proof (this part will be replaced with the proof to be provided as input)
+### Template Proof 
 
 `cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal snark-seal.json -t intermediate.h -o constants.h`
 
+### Proof to Input Hex 
+`cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
 
 
