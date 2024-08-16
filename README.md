@@ -23,7 +23,9 @@ The first proof is a Stark, that is later converted into a Snark (groth16).
 Currently RISC0 support for Groth16 is only available on x86/x64.
 Also some of the scripts are aimed to run in linux, and Docker is required to be installed.
 
-This steps where tested on WSL (Ubuntu 22) on Windows 11 and also in Azure Standard E2s v3
+This steps where tested on WSL (Ubuntu 20.04) on Windows 11 and also in Azure Standard E2s v3
+
+To make docker to be accesible from wsl follow this [instructions](https://docs.docker.com/desktop/wsl/)
 
 #### Clone repo
 `clone git@github.com:FairgateLabs/rust-bitvmx-zk-proof.git`
