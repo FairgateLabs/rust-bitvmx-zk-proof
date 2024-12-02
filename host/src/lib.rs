@@ -25,8 +25,7 @@ pub fn deserialize_receipt(name: &str) -> Receipt {
 }
 
 
-pub fn prove_stark(input: u32, output_file: &str) {
-
+pub fn prove_stark<T: serde::Serialize>(input: T, output_file: &str) {
     // Initialize the executor environment with the input.
     let env = ExecutorEnv::builder()
         .write(&input)
