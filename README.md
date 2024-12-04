@@ -80,9 +80,9 @@ If the proof will be provided as input to the program:
 
 ### Proving
 
-The first step is to generate the stark proof, passing the expected input. In order to make the host generic, we need to specify the directory to the guest code. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
+The first step is to generate the stark proof, passing the expected input. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
 
-`GUEST_CODE=<base_path>/zkvm_guest cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin`
+`cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin`
 
 The second step is to generate the snark proof for the stark proof.
 
