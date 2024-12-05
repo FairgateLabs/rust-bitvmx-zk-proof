@@ -80,9 +80,13 @@ If the proof will be provided as input to the program:
 
 ### Proving
 
-The first step is to generate the stark proof, passing the expected input. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
+The first step is to generate the stark proof, passing the expected input written in a file (TODO: maybe we can make this more generic so a file is not needed for basic types and alike).
 
-`cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin`
+Serialising the data or not depends on the use case, and it is the _client_ who decides: it should be the one that, when needed, serialises the data and provides a _guest_ that deserializes it when reading from env.
+
+To test the implemented dummy guest, provide a file with a number written on it: any input bellow 100 will output a journal with 1, and zero otherwise.
+
+`cargo run --release --bin host -- prove-stark --input <input_file> --output stark-proof.bin`
 
 The second step is to generate the snark proof for the stark proof.
 
