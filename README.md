@@ -52,11 +52,9 @@ Option: (1) standard installation
 
 `source ~/.bashrc` (to update path)
 
-~~`rzup --version 1.0.5`~~
-
 `cargo install cargo-binstall`
 
-`cargo binstall cargo-risczero --version 1.0.5`
+`cargo binstall cargo-risczero --version 2.0.1`
 
 `cargo risczero install`
 
