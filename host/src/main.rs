@@ -1,6 +1,9 @@
+use std::io::Write;
+
 use host::{prove_stark, verify_stark, prove_snark};
 use clap::{Parser, Subcommand};
 use json::JsonValue;
+use serde_json::json;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
@@ -23,6 +26,9 @@ enum Commands {
         #[arg(short, long, value_name = "FILE")]
         output: String,
 
+        /// Output JSON file
+        #[arg(short, long, value_name = "JSON_PATH")]
+        json: String,
     },
 
     /// Verify the stark proof
@@ -42,6 +48,10 @@ enum Commands {
         /// Snark seal file
         #[arg(short, long, value_name = "FILE")]
         output: String,
+
+        /// Output JSON file
+        #[arg(short, long, value_name = "JSON_PATH")]
+        json: String,
     },
 
     /// Dump the ELF_ID that will be used as part of the groth proof
@@ -70,15 +80,31 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::ProveStark { input, output }) => {
-            prove_stark(*input, &output)
+        Some(Commands::ProveStark { input, output, json }) => {
+            let mut file = create_or_open_file(json);
+            prove_stark(*input, &output);
+
+            let json_result = json!({
+                "type": "ProveStarkResult",
+            });
+
+            file.write_all(json_result.to_string().as_bytes())
+                .expect("Failed to write JSON to file");
+
         },
         Some(Commands::VerifyStark { input }) => {
             verify_stark(&input)
         },
-        Some(Commands::ProveSnark { input, output }) => {
-            prove_snark(&input, &output)
+        Some(Commands::ProveSnark { input, output , json}) => {
+            let mut file = create_or_open_file(json);
+            prove_snark(&input, &output);
 
+            let json_result = json!({
+                "type": "ProveSnarkResult",
+            });
+
+            file.write_all(json_result.to_string().as_bytes())
+                .expect("Failed to write JSON to file");
         },
         Some(Commands::DumpId {output}) => {
             let mut json = JsonValue::new_array();
@@ -96,4 +122,13 @@ fn main() {
         },
     };
 
+}
+
+fn create_or_open_file(file_path: &str) -> std::fs::File {
+    std::fs::OpenOptions::new()
+        .create(true) // create if it doesn't exist
+        .write(true) // enable write
+        .truncate(true) // clear existing content
+        .open(file_path)
+        .expect("Failed to open or create file")
 }
