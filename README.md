@@ -52,13 +52,11 @@ Option: (1) standard installation
 
 `source ~/.bashrc` (to update path)
 
-~~`rzup --version 1.0.5`~~
-
 `cargo install cargo-binstall`
 
-`cargo binstall cargo-risczero --version 1.0.5`
+`cargo binstall cargo-risczero --version 2.0.1`
 
-`cargo risczero install`
+`rzup install`
 
 ### Setup Phase
 
@@ -75,8 +73,12 @@ This command will use the identifier and the expected journal result (in this ar
 If the proof will be inserted in the constants.h directly:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o intermediate.h`
 
+TODO: explain problem with relative paths
+
 If the proof will be provided as input to the program:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o constants.h --zero-proof`
+
+TODO: Explain when using proof-as-input
 
 ### Proving
 
@@ -106,5 +108,7 @@ If not, try runnign it in this way:
 
 ### Proof to Input Hex 
 `cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
+
+TODO: explain further why is this needed
 
 
