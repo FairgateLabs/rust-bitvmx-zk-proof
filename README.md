@@ -71,7 +71,7 @@ This command will use the identifier and the expected journal result (in this ar
 ### Template Setup
 
 If the proof will be inserted in the constants.h directly:
-`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o intermediate.h`
+`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ../bitvmx-zk-verifier/templates/constants_template.h -o intermediate.h`
 
 If the proof will be provided as input to the program:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o constants.h --zero-proof`
@@ -80,12 +80,12 @@ If the proof will be provided as input to the program:
 
 The first step is to generate the stark proof, passing the expected input. In this dummy example, any input bellow 100 will output a journal with 1, and zero otherwise.
 
-`cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin`
+`cargo run --release --bin host -- prove-stark --input 50 --output stark-proof.bin --json output.json`
 
 The second step is to generate the snark proof for the stark proof.
 
 Check running `docker` works fine. In that case run this command:
-`cargo run --release --bin host -- prove-snark --input stark-proof.bin --output snark-seal.json`
+`cargo run --release --bin host -- prove-snark --input stark-proof.bin --json output.json`
 
 If not, try runnign it in this way:
 `sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --output snark-seal.json`

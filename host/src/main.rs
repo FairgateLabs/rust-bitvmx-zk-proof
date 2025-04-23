@@ -27,7 +27,7 @@ enum Commands {
         output: String,
 
         /// Output JSON file
-        #[arg(short, long, value_name = "JSON_PATH")]
+        #[arg(short, long, value_name = "JSON_FILE")]
         json: String,
     },
 
@@ -45,12 +45,8 @@ enum Commands {
         #[arg(short, long, value_name = "FILE")]
         input: String,
 
-        /// Snark seal file
-        #[arg(short, long, value_name = "FILE")]
-        output: String,
-
         /// Output JSON file
-        #[arg(short, long, value_name = "JSON_PATH")]
+        #[arg(short, long, value_name = "JSON_FILE")]
         json: String,
     },
 
@@ -86,6 +82,7 @@ fn main() {
 
             let json_result = json!({
                 "type": "ProveStarkResult",
+                "data": true,
             });
 
             file.write_all(json_result.to_string().as_bytes())
@@ -95,14 +92,16 @@ fn main() {
         Some(Commands::VerifyStark { input }) => {
             verify_stark(&input)
         },
-        Some(Commands::ProveSnark { input, output , json}) => {
+        Some(Commands::ProveSnark { input, json}) => {
             let mut file = create_or_open_file(json);
-            prove_snark(&input, &output);
+            let snark_seal_data= prove_snark(&input);
 
             let json_result = json!({
                 "type": "ProveSnarkResult",
+                "data": snark_seal_data,
             });
 
+            println!("The proof was executed, and the seal was saved");
             file.write_all(json_result.to_string().as_bytes())
                 .expect("Failed to write JSON to file");
         },
