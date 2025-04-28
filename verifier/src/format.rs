@@ -1,20 +1,16 @@
-
 use risc0_groth16::Seal;
-use risc0_zkvm::{MaybePruned, Receipt, ReceiptClaim};
 use risc0_zkp::core::digest::Digest;
+use risc0_zkvm::{MaybePruned, Receipt, ReceiptClaim};
 use std::io::Read;
 
 use num_bigint::BigInt;
 use std::str::FromStr;
 
-
 pub fn deserialize_receipt(name: &str) -> Receipt {
-
     //deserialize receipt from file using bin code
     let path = std::path::Path::new(name);
     let receipt_bytes = std::fs::read(path).unwrap();
     bincode::deserialize(&receipt_bytes).unwrap()
-
 }
 
 pub fn split_digest_custom(d: Digest) -> (u128, u128) {
@@ -27,20 +23,18 @@ pub fn split_digest_custom(d: Digest) -> (u128, u128) {
     )
 }
 
-
 pub fn bytes_to_str(bytes: &[u8]) -> String {
-    bytes.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(", ")
+    bytes
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>()
+        .join(", ")
 }
-
 
 // Convert the U256 value to a byte array in big-endian format
 pub fn from_u256_bigint(value: &str) -> Vec<u8> {
     //to_fixed_array(hex::decode(value).unwrap()).to_vec()
-    to_fixed_array(
-    BigInt::from_str(value)
-                .unwrap()
-                .to_bytes_be()
-                .1).to_vec()
+    to_fixed_array(BigInt::from_str(value).unwrap().to_bytes_be().1).to_vec()
 }
 
 pub fn to_fixed_array(input: Vec<u8>) -> [u8; 32] {
@@ -49,7 +43,6 @@ pub fn to_fixed_array(input: Vec<u8>) -> [u8; 32] {
     fixed_array[start..].copy_from_slice(&input[input.len().saturating_sub(32)..]);
     fixed_array
 }
-
 
 pub fn get_image_id(image_id: &String) -> [u32; 8] {
     let mut file = std::fs::File::open(image_id).unwrap();
@@ -64,16 +57,13 @@ pub fn get_image_id(image_id: &String) -> [u32; 8] {
     image_id
 }
 
-
-pub fn get_claim(image_id: &String, journal: &Vec<u8> ) -> ReceiptClaim{
-    
+pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
     let image_id = get_image_id(image_id);
     let digest = Digest::new(image_id);
 
     let journal_maybe = MaybePruned::Value(journal.clone());
     let claim = ReceiptClaim::ok(digest, journal_maybe);
     claim
-
 }
 
 pub fn get_seal(proof: &str) -> Seal {
@@ -81,7 +71,11 @@ pub fn get_seal(proof: &str) -> Seal {
     let mut proof_json = String::new();
     file.read_to_string(&mut proof_json).unwrap();
     let values = json::parse(&proof_json).unwrap();
-    let seal_vec = values.members().map(|x| x.as_u8()).collect::<Option<Vec<u8>>>().unwrap();
+    let seal_vec = values
+        .members()
+        .map(|x| x.as_u8())
+        .collect::<Option<Vec<u8>>>()
+        .unwrap();
     Seal::from_vec(&seal_vec).unwrap()
 }
 
@@ -118,18 +112,20 @@ pub fn split_g1(data: String) -> Vec<String> {
 }
 
 pub fn g1_strings_to_vec(data: Vec<String>) -> Vec<Vec<u8>> {
-   vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])]
+    vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])]
 }
 
 pub fn g2_strings_to_vec(data: Vec<String>) -> Vec<Vec<Vec<u8>>> {
-   vec![vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])],
-        vec![from_u256_bigint(&data[2]), from_u256_bigint(&data[3])]]
+    vec![
+        vec![from_u256_bigint(&data[0]), from_u256_bigint(&data[1])],
+        vec![from_u256_bigint(&data[2]), from_u256_bigint(&data[3])],
+    ]
 }
 
 pub fn split_g2(data: String) -> Vec<String> {
-// Trim the parentheses around the whole string
+    // Trim the parentheses around the whole string
     let trimmed_input = data.trim_matches(|c| c == '(' || c == ')');
-    
+
     // Split by comma
     let parts: Vec<&str> = trimmed_input.split("), QuadExtField(").collect();
 
@@ -137,11 +133,13 @@ pub fn split_g2(data: String) -> Vec<String> {
 
     for part in parts {
         // Remove the "QuadExtField(" prefix and the closing ")" if it's present
-        let cleaned = part.trim_start_matches("QuadExtField(").trim_end_matches(')');
-        
+        let cleaned = part
+            .trim_start_matches("QuadExtField(")
+            .trim_end_matches(')');
+
         // Split by the `+` sign
         let sub_parts: Vec<&str> = cleaned.split(" + ").collect();
-        
+
         // Remove the `* u` from the second part and trim any whitespace
         let first_value = sub_parts[0].trim();
         let second_value = sub_parts[1].trim().trim_end_matches(" * u");
@@ -153,4 +151,3 @@ pub fn split_g2(data: String) -> Vec<String> {
 
     results
 }
-
