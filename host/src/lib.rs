@@ -24,15 +24,10 @@ pub fn deserialize_receipt(name: &str) -> Receipt {
 
 pub fn prove_stark(input: &str, elf_path: &str, output_file: &str) {
     let input_parsed = std::fs::read(input).unwrap();
-    prove_stark_no_cli(input_parsed, elf_path, output_file);
-}
-
-// TODO tmp for current tests, unify with prove_stark when done
-pub fn prove_stark_no_cli<T: serde::Serialize>(input: T, elf_path: &str, output_file: &str) {
     let start = std::time::Instant::now();
 
     let env = ExecutorEnv::builder()
-        .write(&input)
+        .write(&input_parsed)
         .unwrap()
         .build()
         .unwrap();

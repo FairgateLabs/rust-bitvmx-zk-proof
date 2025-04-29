@@ -125,7 +125,7 @@ We have two ways to prepare the proof for its program execution
 
 #### Template Proof
 If the proof will be inserted in the `constants.h` directly run:
-`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o intermediate.h`
+`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ../bitvmx-zk-verifier/templates/constants_template.h -o intermediate.h`
 and
 `cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal snark-seal.json -t intermediate.h -o constants.h`
 
@@ -133,7 +133,7 @@ Now take note of the path to the `constants.h` file, as it will be used later on
 
 #### Proof to Input Hex 
 If the proof will be provided as input to the program:
-`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ..\bitvmx-zk-verifier\templates\constants_template.h -o constants.h --zero-proof`
+`cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ../bitvmx-zk-verifier/templates/constants_template.h -o constants.h --zero-proof`
 and
 `cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
 
