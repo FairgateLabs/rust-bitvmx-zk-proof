@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use host::{prove_stark, verify_stark, prove_snark};
 use clap::{Parser, Subcommand};
+use host::{prove_snark, prove_stark, verify_stark};
 use json::JsonValue;
 use serde_json::json;
 use tracing_subscriber::EnvFilter;
@@ -15,10 +15,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-
     /// Generate the stark proof
-    ProveStark{
-        /// Input that proves the stark 
+    ProveStark {
+        /// Input that proves the stark
         #[arg(short, long)]
         input: u32,
 
@@ -27,17 +26,16 @@ enum Commands {
         output: String,
 
         /// Output JSON file
-        #[arg(short, long, value_name = "JSON_PATH")]
+        #[arg(short, long, value_name = "JSON_FILE")]
         json: String,
     },
 
     /// Verify the stark proof
-    VerifyStark{
+    VerifyStark {
         /// Stark proof file
         #[arg(short, long, value_name = "FILE")]
         input: String,
     },
-
 
     /// Convert a stark proof to a groth16 proof
     ProveSnark {
@@ -45,12 +43,8 @@ enum Commands {
         #[arg(short, long, value_name = "FILE")]
         input: String,
 
-        /// Snark seal file
-        #[arg(short, long, value_name = "FILE")]
-        output: String,
-
         /// Output JSON file
-        #[arg(short, long, value_name = "JSON_PATH")]
+        #[arg(short, long, value_name = "JSON_FILE")]
         json: String,
     },
 
@@ -59,10 +53,7 @@ enum Commands {
         /// ID file
         #[arg(short, long, value_name = "FILE")]
         output: String,
-    }
-
-
-
+    },
 }
 
 fn init_logging() {
@@ -71,42 +62,75 @@ fn init_logging() {
         .init();
 }
 
-
-
 fn main() {
-
     init_logging();
 
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::ProveStark { input, output, json }) => {
-            let mut file = create_or_open_file(json);
-            prove_stark(*input, &output);
+        Some(Commands::ProveStark {
+            input,
+            output,
+            json,
+        }) => {
+            let mut file = create_or_open_file(json, true);
+            let result = prove_stark(*input, &output);
 
-            let json_result = json!({
-                "type": "ProveStarkResult",
-            });
+            let json_result = match result {
+                Ok(_) => {
+                    json!({
+                        "type": "ProveResult",
+                        "data": {
+                            "vec": Vec::<u8>::new(),
+                            "status": "OK",
+                        },
+                    })
+                }
+                Err(e) => {
+                    json!({
+                        "type": "ProveResult",
+                        "data": {
+                            "vec": Vec::<u8>::new(),
+                            "status": e.to_string(),
+                        },
+                    })
+                }
+            };
 
             file.write_all(json_result.to_string().as_bytes())
                 .expect("Failed to write JSON to file");
+        }
+        Some(Commands::VerifyStark { input }) => verify_stark(&input),
+        Some(Commands::ProveSnark { input, json }) => {
+            validate_json_status(json);
+            let snark_seal_result = prove_snark(&input);
+            let mut file = create_or_open_file(json, true);
 
-        },
-        Some(Commands::VerifyStark { input }) => {
-            verify_stark(&input)
-        },
-        Some(Commands::ProveSnark { input, output , json}) => {
-            let mut file = create_or_open_file(json);
-            prove_snark(&input, &output);
-
-            let json_result = json!({
-                "type": "ProveSnarkResult",
-            });
+            let json_result = match snark_seal_result {
+                Ok(vec) => {
+                    json!({
+                        "type": "ProveResult",
+                        "data": {
+                            "vec": vec,
+                            "status": "OK",
+                        },
+                    })
+                }
+                Err(e) => {
+                    json!({
+                        "type": "ProveResult",
+                        "data": {
+                            "vec": Vec::<u8>::new(),
+                            "status": e,
+                        },
+                    })
+                }
+            };
 
             file.write_all(json_result.to_string().as_bytes())
                 .expect("Failed to write JSON to file");
-        },
-        Some(Commands::DumpId {output}) => {
+        }
+        Some(Commands::DumpId { output }) => {
             let mut json = JsonValue::new_array();
             for value in methods::BITVMX_ID.iter() {
                 let _ = json.push(*value);
@@ -115,20 +139,34 @@ fn main() {
 
             let path = std::path::Path::new(output);
             std::fs::write(path, json.dump()).unwrap();
-
-        },
+        }
         None => {
-         println!("No command provided");
-        },
+            println!("No command provided");
+        }
     };
-
 }
 
-fn create_or_open_file(file_path: &str) -> std::fs::File {
-    std::fs::OpenOptions::new()
-        .create(true) // create if it doesn't exist
-        .write(true) // enable write
-        .truncate(true) // clear existing content
-        .open(file_path)
-        .expect("Failed to open or create file")
+fn validate_json_status(json: &String){
+    let file = create_or_open_file(&json, false);
+    let json_content: serde_json::Value = serde_json::from_reader(file).expect("Failed to read JSON file");
+    if let Some(status) = json_content["data"]["status"].as_str() {
+        if status != "OK" {
+            panic!("Status is not OK: {}", status);
+        }
+    }
+}
+
+fn create_or_open_file(file_path: &str, write: bool) -> std::fs::File {
+    match write {
+        true => std::fs::OpenOptions::new()
+                    .create(true) // create if it doesn't exist
+                    .write(true) // enable write
+                    .truncate(true) // clear existing content
+                    .open(file_path)
+                    .expect("Failed to open or create file"),
+        false => std::fs::OpenOptions::new()
+                    .read(true) // enable read
+                    .open(file_path)
+                    .expect("Failed to open or create file")
+    }
 }
