@@ -76,5 +76,6 @@ pub fn prove_snark(receipt_name: &str) -> Result<Vec<u8>, String> {
         data_vec.push(*data);
     }
 
+    println!("The proof was executed, and the seal saved in the receipt: {}", receipt_name);
     Ok(data_vec)
 }
