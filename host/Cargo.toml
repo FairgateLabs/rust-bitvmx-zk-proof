@@ -13,3 +13,4 @@ bincode = "1.3"
 hex = "0.4"
 clap = { version = "4.5.8", features = ["derive"] }
 json = "0.12.4"
+zk-result = { path = "../zk-result" }
