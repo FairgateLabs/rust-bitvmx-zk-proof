@@ -137,23 +137,22 @@ If the proof will be provided as input to the program:
 and
 `cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
 
-Now take note of the printed hex string, as it will be used later on.
+Now take note of the printed hex string and the path to the `constants.h` file, as they will be used later on.
 
 ### Execution
 To execute the program, we have to follow two other README files:
 1. [bitvmx-docker-riscv32](https://github.com/FairgateLabs/bitvmx-docker-riscv32/blob/main/README.md) to create the Verifier's ELF (`zkverifier-new-mul.elf`) that will be run in the BitVMX-CPU. _NOTE: if I'm not mistaken, this is a one-time step, no need to re-run it for future program executions_
 2. [BitVMX-CPU](https://github.com/FairgateLabs/BitVMX-CPU/blob/main/README.md) to run the Verifier's ELF (`zkverifier-new-mul.elf`) in the CPU with the input that we built in the previous _Execution Preparation_ step.
 
-Below are the steps as a reference, but bear in mind that the up-to-date instructions are in the respective README files mentioned above.
-1. Set up `bitvmx-docker-riscv32` repository.
-   1. clone [bitvmx-docker-riscv32](https://github.com/FairgateLabs/bitvmx-docker-riscv32) repository
-   2. from `bitvmx-docker-riscv32` repository run `./docker-build.sh`. This step takes a while, but it is necessary only the first time, no need to re-run it for future program executions.
-   3. from `bitvmx-docker-riscv32` repository run `./docker-run.sh verifier verifier/build.sh --with-mul`. This will create the `zkverifier-new-mul.elf` file in the `verifier/build` folder. Again this step is necessary only the first time, no need to re-run it for future program executions. 
-2. Clone the [BitVMX-CPU](https://github.com/FairgateLabs/BitVMX-CPU) repository.
+Below are the steps as a reference, but bear in mind that the up-to-date instructions are in the respective README files mentioned above. 
+1. Clone the [BitVMX-CPU](https://github.com/FairgateLabs/BitVMX-CPU) repository.
+2. In `BitVMX-CPU` repo, let's set the verifier:
+   1. if not done yet, initialise `docker-riscv32` submodule (it points to [bitvmx-docker-riscv32](https://github.com/FairgateLabs/bitvmx-docker-riscv32))
+   2. from `docker-riscv32` submodule run `./docker-build.sh`. This step takes a while, but it is run just once, no need to re-run it again, neither for this Template (image_id) nor for a new one.
+   3. copy `constants.sh` generated before to `docker-riscv32/verifier`, it will be used by `docker-riscv32/verifier/build.sh` and internally by [bitvmx-docker-riscv32](https://github.com/FairgateLabs/bitvmx-docker-riscv32).
+   4. from `docker-riscv32` submodule run `./docker-run.sh verifier verifier/build.sh --with-mul`. This will create the `zkverifier-new-mul.elf` file in the `docker-riscv32/verifier/build` folder. This step is necessary only once for each Template (image_id).
 3. Now depending on the input preparation you did on the _Execution Preparation_ step, you have to run the following:
-   1. _Template Proof_: 
-      1. Now is when we use the `constants.h` generated on _Template Proof_ step. _TODO(iago): Clarify with Martín how to make use of this file, it seems to be ignored by curent `bitvmx-docker-riscv32` implementation._
-      2. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ../bitvmx-docker-riscv32/verifier/build/zkverifier-new-mul.elf --no-hash --debug`
-   2. _Proof as Input_:
-       1. Now is when we use the output printed on the _Proof to Input Hex_ step.
-       2. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ../bitvmx-docker-riscv32/verifier/build/zkverifier-new-mul.elf --input <output-from-proof-to-input-hex-step> --no-hash --debug`
+   1. _Template Proof_. Since the input is already in the `constants.h` file, we can directly run the emulator without input.
+      1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --no-hash --debug`
+   2. _Proof as Input_. Now we will use the hex generated on _Proof to Input Hex_ step as input, because `constants.h` does not contain it.
+      1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --input <output-from-proof-to-input-hex-step> --no-hash --debug`
