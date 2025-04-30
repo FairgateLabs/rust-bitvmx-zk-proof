@@ -46,6 +46,10 @@ enum Commands {
         /// Output JSON file
         #[arg(short, long, value_name = "JSON_FILE")]
         json: String,
+
+        /// JSON Input Condition File
+        #[arg(short, long, value_name = "JSON_FILE")]
+        json_input: Option<String>,
     },
 
     /// Dump the ELF_ID that will be used as part of the groth proof
@@ -101,10 +105,15 @@ fn main() {
                 .expect("Failed to write JSON to file");
         }
         Some(Commands::VerifyStark { input }) => verify_stark(&input),
-        Some(Commands::ProveSnark { input, json }) => {
-            validate_json_status(json);
-            let snark_seal_result = prove_snark(&input);
+        Some(Commands::ProveSnark { input, json, json_input }) => {
+            let json_input = match json_input {
+                Some(input) => input,
+                None => json
+            };
+            
+            validate_json_status(json_input);
             let mut file = create_or_open_file(json, true);
+            let snark_seal_result = prove_snark(&input);
 
             let json_result = match snark_seal_result {
                 Ok(vec) => {
