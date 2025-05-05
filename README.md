@@ -102,6 +102,8 @@ If not, try runnign it in this way:
 `cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
 
 # CUDA execution
-In order to use CUDA execution on a CUDA-enabled host, we need to activate `cuda` feature for `risc0-zkvm` dependency on the host.
+In order to use CUDA execution on a CUDA-enabled host, we need to:
+1. activate `cuda` feature for `risc0-zkvm` dependency on the host
+2. run the host with `RUSTFLAGS="-C target-cpu=native" cargo run...`
 
 Also, as a reference, [risc0_cuda_linux_setup.sh](risc0_cuda_linux_setup.sh) shows how to set up a CUDA-enabled Linux (Ubuntu) instance with Risc0 and CUDA drivers. Note that the script is not fully automated, it still requires some user confirmations on certain commands.
