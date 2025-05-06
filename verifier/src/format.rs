@@ -2,6 +2,7 @@ use risc0_groth16::Seal;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkvm::{MaybePruned, Receipt, ReceiptClaim};
 use std::io::Read;
+use zk_result::ResultType;
 
 use num_bigint::BigInt;
 use std::str::FromStr;
@@ -68,14 +69,13 @@ pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
 
 pub fn get_seal(proof: &str) -> Seal {
     let mut file = std::fs::File::open(proof).unwrap();
-    let mut proof_json = String::new();
-    file.read_to_string(&mut proof_json).unwrap();
-    let values = json::parse(&proof_json).unwrap();
-    let seal_vec = values
-        .members()
-        .map(|x| x.as_u8())
-        .collect::<Option<Vec<u8>>>()
-        .unwrap();
+    let mut json_content = String::new();
+    file.read_to_string(&mut json_content).unwrap();
+
+    let seal_vec = ResultType::from_json_string(json_content)
+        .unwrap()
+        .get_seal();
+
     Seal::from_vec(&seal_vec).unwrap()
 }
 

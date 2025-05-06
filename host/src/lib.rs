@@ -3,12 +3,15 @@
 use methods::{BITVMX_ELF, BITVMX_ID};
 use risc0_zkvm::{default_prover, get_prover_server, ExecutorEnv, ProverOpts, Receipt};
 
-pub fn serialize_receipt(receipt: Receipt, name: &str) {
+pub fn serialize_receipt(receipt: Receipt, name: &str) -> Result<(), String> {
     //serialize with bincode
-    let receipt_bytes = bincode::serialize(&receipt).unwrap();
+    let receipt_bytes = bincode::serialize(&receipt).map_err(|_| "Failed to serialize receipt")?;
     //save to file
     let path = std::path::Path::new(name);
-    std::fs::write(path, receipt_bytes).unwrap();
+    std::fs::write(path, receipt_bytes)
+        .map_err(|_| format!("Failed to write receipt to file: {}", name))?;
+
+    Ok(())
 }
 
 pub fn deserialize_receipt(name: &str) -> Receipt {
@@ -39,12 +42,12 @@ pub fn prove_stark(input: u32, output_file: &str) -> Result<(), String> {
     // extract the receipt.
     let receipt = prove_info.receipt;
 
+    serialize_receipt(receipt, output_file)?;
+
     println!(
         "The proof was executed, and the receipt saved to the file: {}",
         output_file
     );
-
-    serialize_receipt(receipt, output_file);
 
     Ok(())
 }
@@ -73,5 +76,6 @@ pub fn prove_snark(receipt_name: &str) -> Result<Vec<u8>, String> {
         data_vec.push(*data);
     }
 
+    println!("The proof was executed, and the seal saved in the receipt: {}", receipt_name);
     Ok(data_vec)
 }
