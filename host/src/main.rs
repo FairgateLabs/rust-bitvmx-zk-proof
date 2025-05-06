@@ -110,12 +110,11 @@ fn main() {
             json,
             json_input,
         }) => {
-            let json_input = match json_input {
-                Some(input) => input,
-                None => json,
+            match json_input {
+                Some(input_json_file) => validate_json_status(input_json_file),
+                None => {},
             };
-
-            validate_json_status(json_input);
+            
             let mut file = create_or_open_file(json, true);
             let snark_seal_result = prove_snark(&input);
 
