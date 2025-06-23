@@ -83,11 +83,11 @@ fn main() {
                     let mut file = create_or_open_file(json, true);
 
                     let json_result = match result {
-                        Ok(_) => serde_json::to_string(&ResultType::ProveResult {
+                        Ok(_) => serde_json::to_string(&ResultType::ProveStarkResult {
                             seal: Vec::new(),
                             status: "OK".to_string(),
                         }),
-                        Err(e) => serde_json::to_string(&ResultType::ProveResult {
+                        Err(e) => serde_json::to_string(&ResultType::ProveStarkResult {
                             seal: Vec::new(),
                             status: e,
                         }),
@@ -119,12 +119,14 @@ fn main() {
             let snark_seal_result = prove_snark(&input);
 
             let json_result = match snark_seal_result {
-                Ok(vec) => serde_json::to_string(&ResultType::ProveResult {
+                Ok((vec, journal)) => serde_json::to_string(&ResultType::ProveSnarkResult {
                     seal: vec,
+                    journal,
                     status: "OK".to_string(),
                 }),
-                Err(e) => serde_json::to_string(&ResultType::ProveResult {
+                Err(e) => serde_json::to_string(&ResultType::ProveSnarkResult {
                     seal: Vec::new(),
+                    journal: Vec::new(),
                     status: e,
                 }),
             }
