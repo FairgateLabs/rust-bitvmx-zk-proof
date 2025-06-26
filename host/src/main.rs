@@ -85,10 +85,12 @@ fn main() {
                     let json_result = match result {
                         Ok(_) => serde_json::to_string(&ResultType::ProveResult {
                             seal: Vec::new(),
+                            journal: Vec::new(),
                             status: "OK".to_string(),
                         }),
                         Err(e) => serde_json::to_string(&ResultType::ProveResult {
                             seal: Vec::new(),
+                            journal: Vec::new(),
                             status: e,
                         }),
                     }
@@ -119,12 +121,14 @@ fn main() {
             let snark_seal_result = prove_snark(&input);
 
             let json_result = match snark_seal_result {
-                Ok(vec) => serde_json::to_string(&ResultType::ProveResult {
+                Ok((vec, journal)) => serde_json::to_string(&ResultType::ProveResult {
                     seal: vec,
+                    journal,
                     status: "OK".to_string(),
                 }),
                 Err(e) => serde_json::to_string(&ResultType::ProveResult {
                     seal: Vec::new(),
+                    journal: Vec::new(),
                     status: e,
                 }),
             }

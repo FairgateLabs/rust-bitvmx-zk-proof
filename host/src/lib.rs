@@ -58,8 +58,9 @@ pub fn verify_stark(receipt_fname: &str) {
     println!("Receipt verified successfully");
 }
 
-pub fn prove_snark(receipt_name: &str) -> Result<Vec<u8>, String> {
+pub fn prove_snark(receipt_name: &str) -> Result<(Vec<u8>, Vec<u8>), String> {
     let receipt = deserialize_receipt(receipt_name);
+    let journal = receipt.journal.bytes.clone();
 
     let groth16_receipt = get_prover_server(&ProverOpts::groth16())
         .map_err(|e| format!("Failed to get prover server: {}", e))?
@@ -77,5 +78,5 @@ pub fn prove_snark(receipt_name: &str) -> Result<Vec<u8>, String> {
     }
 
     println!("The proof was executed, and the seal saved in the receipt: {}", receipt_name);
-    Ok(data_vec)
+    Ok((data_vec, journal))
 }
