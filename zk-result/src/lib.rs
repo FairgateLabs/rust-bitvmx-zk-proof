@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum ResultType {
-    ProveSnarkResult { seal: Vec<u8>, journal: Vec<u8>, status: String },
-    ProveStarkResult { seal: Vec<u8>, status: String },
+    ProveResult { seal: Vec<u8>, journal: Vec<u8>, status: String },
 }
 
 impl ResultType {
@@ -21,22 +20,19 @@ impl ResultType {
 
     pub fn get_seal(&self) -> Vec<u8> {
         match self {
-            ResultType::ProveSnarkResult { seal, .. } => seal.clone(),
-            ResultType::ProveStarkResult { seal, .. } => seal.clone(),
+            ResultType::ProveResult { seal, .. } => seal.clone(),
         }
     }
 
     pub fn get_journal(&self) -> Vec<u8> {
         match self {
-            ResultType::ProveSnarkResult { journal, .. } => journal.clone(),
-            ResultType::ProveStarkResult { .. } => Vec::new(),
+            ResultType::ProveResult { journal, .. } => journal.clone(),
         }
     }
 
     pub fn get_status(&self) -> String {
         match self {
-            ResultType::ProveSnarkResult { status, .. } => status.clone(),
-            ResultType::ProveStarkResult { status, .. } => status.clone(),
+            ResultType::ProveResult { status, .. } => status.clone(),
         }
     }
 }
