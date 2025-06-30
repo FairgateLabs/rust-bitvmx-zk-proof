@@ -111,7 +111,7 @@ For example, to test the `guest_sample` provided:
 The second step is to generate the snark proof for the stark proof (for the `stark-proof.bin` generated on the previous step)
 
 Check running `docker` works fine. In that case run this command:
-`cargo run --release --bin host -- prove-snark --input stark-proof.bin --output snark-seal.json`
+`cargo run --release --bin host -- prove-snark --input stark-proof.bin --json output.json`
 
 If not, try runnign it in this way:
 `sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --output snark-seal.json`
