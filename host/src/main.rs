@@ -2,8 +2,9 @@ use std::io::{Read, Write};
 
 use clap::{Parser, Subcommand};
 use host::{prove_snark, prove_stark, verify_stark};
-use json::JsonValue;
+use serde_json::to_string_pretty;
 use tracing_subscriber::EnvFilter;
+use cli_serde::deserialize_image_id;
 use zk_result::ResultType;
 
 #[derive(Parser)]
@@ -16,13 +17,17 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Generate the stark proof
-    ProveStark {
+    ProveStark{
         /// Input that proves the stark
-        #[arg(short, long)]
-        input: u32,
+        #[arg(short, long, value_name = "INPUT_FILE")]
+        input: String,
+
+        /// ELF file path
+        #[arg(short, long, value_name = "ELF_FILE")]
+        elf: String,
 
         /// Output Proof file
-        #[arg(short, long, value_name = "FILE")]
+        #[arg(short, long, value_name = "OUTPUT_FILE")]
         output: String,
 
         /// Output JSON file
@@ -31,7 +36,11 @@ enum Commands {
     },
 
     /// Verify the stark proof
-    VerifyStark {
+    VerifyStark{
+        /// Image id
+        #[arg(short, long, value_name = "IMAGE_ID")]
+        image_id: String,
+
         /// Stark proof file
         #[arg(short, long, value_name = "FILE")]
         input: String,
@@ -54,6 +63,10 @@ enum Commands {
 
     /// Dump the ELF_ID that will be used as part of the groth proof
     DumpId {
+        /// Serialized image id
+        #[arg(short, long, value_name = "FILE")]
+        id: String,
+
         /// ID file
         #[arg(short, long, value_name = "FILE")]
         output: String,
@@ -74,10 +87,11 @@ fn main() {
     match &cli.command {
         Some(Commands::ProveStark {
             input,
+            elf,
             output,
             json,
         }) => {
-            let result = prove_stark(*input, output);
+            let result = prove_stark(input, &elf, output);
             match json {
                 Some(json) => {
                     let mut file = create_or_open_file(json, true);
@@ -106,7 +120,13 @@ fn main() {
                 }
             }
         }
-        Some(Commands::VerifyStark { input }) => verify_stark(&input),
+        Some(Commands::VerifyStark { input , image_id}) => {
+            let image_id = deserialize_image_id(image_id).expect("Invalid image id");
+            match verify_stark(image_id, &input) {
+                Ok(_) => println!("Stark proof verified successfully"),
+                Err(e) => println!("Failed to verify stark proof: {}", e),
+            }
+        },
         Some(Commands::ProveSnark {
             input,
             json,
@@ -118,7 +138,7 @@ fn main() {
             };
             
             let mut file = create_or_open_file(json, true);
-            let snark_seal_result = prove_snark(&input);
+            let snark_seal_result = prove_snark(&input, );
 
             let json_result = match snark_seal_result {
                 Ok((vec, journal)) => serde_json::to_string(&ResultType::ProveResult {
@@ -137,15 +157,20 @@ fn main() {
             file.write_all(json_result.to_string().as_bytes())
                 .expect("Failed to write JSON to file");
         }
-        Some(Commands::DumpId { output }) => {
-            let mut json = JsonValue::new_array();
-            for value in methods::BITVMX_ID.iter() {
+        Some(Commands::DumpId {id: image_id, output}) => {
+            let image_id = deserialize_image_id(image_id).expect("Invalid image id");
+
+            let mut json = vec![];
+
+            for value in image_id.iter() {
                 let _ = json.push(*value);
             }
-            println!("ID: {}", json.pretty(2));
+            let value = to_string_pretty(&json).expect("Failed to serialize ID to JSON");
+            println!("ID: {}", value);
 
             let path = std::path::Path::new(output);
-            std::fs::write(path, json.dump()).unwrap();
+            std::fs::write(path, value).expect("Failed to write ID to file");
+
         }
         None => {
             println!("No command provided");
