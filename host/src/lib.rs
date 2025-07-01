@@ -37,7 +37,7 @@ pub fn prove_stark(input: &str, elf_path: &str, output_file: &str) -> Result<(),
     // Obtain the default prover.
     let prover = default_prover();
 
-    let elf = load_elf(elf_path).unwrap();
+    let elf = load_elf(elf_path).map_err(|e| format!("Failed to load ELF file: {}", e))?;
 
     // Proof information by proving the specified ELF binary.
     // This struct contains the receipt along with statistics about execution of the guest
@@ -59,10 +59,12 @@ pub fn prove_stark(input: &str, elf_path: &str, output_file: &str) -> Result<(),
     Ok(())
 }
 
-pub fn verify_stark(image_id: impl Into<Digest>, receipt_fname: &str) {
+pub fn verify_stark(image_id: impl Into<Digest>, receipt_fname: &str) -> Result<(), String> {
     let receipt = deserialize_receipt(receipt_fname);
-    receipt.verify(image_id).unwrap();
-    println!("Receipt verified successfully");
+    receipt.verify(image_id)
+        .map_err(|e| format!("Failed to verify receipt: {}", e))?;
+
+    Ok(())
 }
 
 pub fn prove_snark(receipt_fname: &str) -> Result<(Vec<u8>, Vec<u8>), String> {

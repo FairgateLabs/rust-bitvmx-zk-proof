@@ -122,7 +122,10 @@ fn main() {
         }
         Some(Commands::VerifyStark { input , image_id}) => {
             let image_id = deserialize_image_id(image_id).expect("Invalid image id");
-            verify_stark(image_id, &input)
+            match verify_stark(image_id, &input) {
+                Ok(_) => println!("Stark proof verified successfully"),
+                Err(e) => println!("Failed to verify stark proof: {}", e),
+            }
         },
         Some(Commands::ProveSnark {
             input,
