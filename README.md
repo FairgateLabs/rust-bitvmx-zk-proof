@@ -6,6 +6,12 @@ For this we have some tools that allows to split the three phases of a ZKP.
 1. Proving
 1. Verification
 
+## ⚠️ Disclaimer
+
+This library is currently under development and may not be fully stable.
+It is not production-ready, has not been audited, and future updates may introduce breaking changes without preserving backward compatibility.
+
+
 ## The Program to Verify
 
 This repo contains a dummy example of a ZKP using RISC0.
