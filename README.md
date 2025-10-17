@@ -162,3 +162,16 @@ Below are the steps as a reference, but bear in mind that the up-to-date instruc
       1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --no-hash --debug`
    2. _Proof as Input_. Now we will use the hex generated on _Proof to Input Hex_ step as input, because `constants.h` does not contain it.
       1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --input <output-from-proof-to-input-hex-step> --no-hash --debug`
+      
+## License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🧩 Part of the BitVMX Ecosystem
+
+This repository is a component of the **BitVMX Ecosystem**, an open platform for disputable computation secured by Bitcoin.  
+You can find the index of all BitVMX open-source components at [**FairgateLabs/BitVMX**](https://github.com/FairgateLabs/BitVMX).
+
+---
