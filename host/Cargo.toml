@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = { version = "2.3.2", features = ["prove"] }
+risc0-zkvm = { version = "3.0.4", features = ["prove"] }
 methods = { path = "../methods" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"

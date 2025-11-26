@@ -4,7 +4,7 @@ pub mod format;
 use ark_bn254::Bn254;
 use hex;
 use risc0_groth16::Verifier;
-use risc0_groth16::{fr_from_hex_string, split_digest, Seal};
+use risc0_groth16::Seal;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkp::verify::VerificationError;
 use risc0_zkvm::sha::Digestible;
@@ -47,21 +47,24 @@ fn verify(
     let seal = get_seal(&seal_fname);
     let params = get_default_parameters()?;
 
-    let (a0, a1) =
-        split_digest(params.control_root).map_err(|_| VerificationError::ReceiptFormatError)?;
-
-    let (c0, c1) =
-        split_digest(claim.digest()).map_err(|_| VerificationError::ReceiptFormatError)?;
-
-    let mut id_bn254: Digest = params.bn254_control_id;
-    id_bn254.as_mut_bytes().reverse();
-    let id_bn254_fr = fr_from_hex_string(&hex::encode(id_bn254))
+    // Encode seal to bytes using bincode (since decode takes &[u8], encode should produce Vec<u8>)
+    let seal_bytes = bincode::serialize(&seal)
         .map_err(|_| VerificationError::ReceiptFormatError)?;
-
-    Verifier::new(&seal, &[a0, a1, c0, c1, id_bn254_fr], &params.verifying_key)
-        .map_err(|_| VerificationError::ReceiptFormatError)?
-        .verify()
-        .map_err(|_| VerificationError::InvalidProof)?;
+    
+    // According to risc0-groth16 3.0.3 source, Verifier::new signature is:
+    // pub fn new(seal: &[u8], control_root: Digest, claim_digest: Digest, 
+    //            bn254_control_id: Digest, verifying_key: &VerifyingKey) -> Result<Self, Error>
+    // The API internally handles splitting digests and creating public inputs
+    Verifier::new(
+        &seal_bytes,
+        params.control_root,
+        claim.digest(),
+        params.bn254_control_id,
+        &params.verifying_key,
+    )
+    .map_err(|_| VerificationError::ReceiptFormatError)?
+    .verify()
+    .map_err(|_| VerificationError::InvalidProof)?;
 
     println!("Verification successful");
 
