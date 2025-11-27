@@ -47,9 +47,8 @@ fn verify(
     let seal = get_seal(&seal_fname);
     let params = get_default_parameters()?;
 
-    // Encode seal to bytes using bincode (since decode takes &[u8], encode should produce Vec<u8>)
-    let seal_bytes = bincode::serialize(&seal)
-        .map_err(|_| VerificationError::ReceiptFormatError)?;
+    // Convert seal to raw bytes format (Verifier::new expects the raw seal bytes)
+    let seal_bytes = seal.to_vec();
     
     // According to risc0-groth16 3.0.3 source, Verifier::new signature is:
     // pub fn new(seal: &[u8], control_root: Digest, claim_digest: Digest, 
