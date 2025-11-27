@@ -50,10 +50,7 @@ fn verify(
     // Convert seal to raw bytes format (Verifier::new expects the raw seal bytes)
     let seal_bytes = seal.to_vec();
     
-    // According to risc0-groth16 3.0.3 source, Verifier::new signature is:
-    // pub fn new(seal: &[u8], control_root: Digest, claim_digest: Digest, 
-    //            bn254_control_id: Digest, verifying_key: &VerifyingKey) -> Result<Self, Error>
-    // The API internally handles splitting digests and creating public inputs
+    // Verifier::new internally handles splitting digests and creating public inputs, no need to do it manually like in v2
     Verifier::new(
         &seal_bytes,
         params.control_root,
