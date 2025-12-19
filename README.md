@@ -120,11 +120,11 @@ Check running `docker` works fine. In that case run this command:
 `cargo run --release --bin host -- prove-snark --input stark-proof.bin --json output.json`
 
 If not, try runnign it in this way:
-`sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --output snark-seal.json`
+`sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --json output.json`
 
 ### Verifiying
 
-`cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal snark-seal.json`
+`cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal output.json`
 
 ### Execution Preparation
 We have two ways to prepare the proof for its program execution
@@ -133,7 +133,7 @@ We have two ways to prepare the proof for its program execution
 If the proof will be inserted in the `constants.h` directly run:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ../bitvmx-zk-verifier/templates/constants_template.h -o intermediate.h`
 and
-`cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal snark-seal.json -t intermediate.h -o constants.h`
+`cargo run --release --bin verifier -- template-proof --journal 1,0,0,0 --seal output.json -t intermediate.h -o constants.h`
 
 Now take note of the path to the `constants.h` file, as it will be used later on.
 
@@ -141,7 +141,7 @@ Now take note of the path to the `constants.h` file, as it will be used later on
 If the proof will be provided as input to the program:
 `cargo run --release --bin verifier -- template-setup --image-id image_id.json --template ../bitvmx-zk-verifier/templates/constants_template.h -o constants.h --zero-proof`
 and
-`cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal snark-seal.json`
+`cargo run --release --bin verifier -- proof-as-input --journal 1,0,0,0 --seal output.json`
 
 Now take note of the printed hex string and the path to the `constants.h` file, as they will be used later on.
 

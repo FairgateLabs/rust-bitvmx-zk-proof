@@ -76,7 +76,7 @@ pub fn get_seal(proof: &str) -> Seal {
         .unwrap()
         .get_seal();
 
-    Seal::from_vec(&seal_vec).unwrap()
+    Seal::decode(&seal_vec).unwrap()
 }
 
 pub fn g1_to_c_bytes(mut g1: Vec<Vec<u8>>) -> Vec<u8> {
