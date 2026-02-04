@@ -26,6 +26,5 @@ jobs:
       submodule_path: 'rust-bitvmx-zk-proof'
       cargo_lock_path: 'rust-bitvmx-zk-proof/Cargo.lock'
       target_path: 'rust-bitvmx-zk-proof/target'
-      submodule_branches: '{}'
     secrets: inherit
     
