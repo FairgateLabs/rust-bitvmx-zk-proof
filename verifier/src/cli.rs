@@ -29,13 +29,9 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", required = true)]
         image_id: String,
 
-        /// Expected journal produces by the stark
-        #[arg(short, long, value_delimiter=',', num_args = 1.., required=true)]
-        journal: Vec<u8>,
-
         /// Groth16 proof file
         #[arg(short, long, value_name = "FILE", required = true)]
-        seal: String,
+        proof: String,
     },
 
     TemplateSetup {
@@ -57,13 +53,9 @@ enum Commands {
     },
 
     TemplateProof {
-        /// Expected journal produces by the stark
-        #[arg(short, long, value_delimiter=',', num_args = 1.., required=true)]
-        journal: Vec<u8>,
-
         /// Groth16 proof file
         #[arg(short, long, value_name = "FILE", required = true)]
-        seal: String,
+        proof: String,
 
         /// Initial template file
         #[arg(short, long, value_name = "FILE", required = true)]
@@ -75,13 +67,9 @@ enum Commands {
     },
 
     ProofAsInput {
-        /// Expected journal produces by the stark
-        #[arg(short, long, value_delimiter=',', num_args = 1.., required=true)]
-        journal: Vec<u8>,
-
         /// Groth16 proof file
         #[arg(short, long, value_name = "FILE", required = true)]
-        seal: String,
+        proof: String,
     },
 }
 
@@ -92,12 +80,8 @@ pub fn run() -> Result<(), VerificationError> {
         Some(Commands::GenerateClaim { image_id, journal }) => {
             show_claim(image_id, journal);
         }
-        Some(Commands::Verify {
-            image_id,
-            journal,
-            seal,
-        }) => {
-            verify(image_id, journal, seal)?;
+        Some(Commands::Verify { image_id, proof }) => {
+            verify(image_id, proof)?;
         }
         Some(Commands::TemplateSetup {
             image_id,
@@ -106,12 +90,11 @@ pub fn run() -> Result<(), VerificationError> {
             zero_proof,
         }) => template_setup(image_id, template, output, *zero_proof),
         Some(Commands::TemplateProof {
-            journal,
-            seal,
+            proof,
             template,
             output,
-        }) => template_proof(journal, seal, template, output),
-        Some(Commands::ProofAsInput { journal, seal }) => proof_as_input(journal, seal),
+        }) => template_proof(proof, template, output),
+        Some(Commands::ProofAsInput { proof }) => proof_as_input(proof),
 
         None => {
             println!("No command provided");

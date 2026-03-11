@@ -3,8 +3,8 @@ pub mod format;
 
 use ark_bn254::Bn254;
 use hex;
-use risc0_groth16::Verifier;
 use risc0_groth16::Seal;
+use risc0_groth16::Verifier;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkp::verify::VerificationError;
 use risc0_zkvm::sha::Digestible;
@@ -38,18 +38,14 @@ fn get_default_parameters() -> Result<Groth16ReceiptVerifierParameters, Verifica
     Ok(params.clone())
 }
 
-fn verify(
-    image_id: &String,
-    journal: &Vec<u8>,
-    seal_fname: &String,
-) -> Result<(), VerificationError> {
-    let claim = get_claim(image_id, journal);
-    let seal = get_seal(&seal_fname);
+fn verify(image_id: &String, proof_fname: &String) -> Result<(), VerificationError> {
+    let (seal, journal) = get_seal_and_journal(&proof_fname);
+    let claim = get_claim(image_id, &journal);
     let params = get_default_parameters()?;
 
     // Convert seal to raw bytes format (Verifier::new expects the raw seal bytes)
     let seal_bytes = seal.to_vec();
-    
+
     // Verifier::new internally handles splitting digests and creating public inputs, no need to do it manually like in v2
     Verifier::new(
         &seal_bytes,
@@ -218,15 +214,10 @@ pub fn template_setup(
     write(output_fname, template).unwrap();
 }
 
-pub fn template_proof(
-    journal: &Vec<u8>,
-    seal: &String,
-    template_fname: &String,
-    output_fname: &String,
-) {
+pub fn template_proof(proof_fname: &String, template_fname: &String, output_fname: &String) {
     let mut template = read_to_string(template_fname).unwrap();
 
-    let seal = get_seal(seal);
+    let (seal, journal) = get_seal_and_journal(proof_fname);
     let proofs = generate_proof_bytes_from_seal(seal);
 
     template = template.replace("proof_a", &bytes_to_str(&proofs[0]));
@@ -237,8 +228,8 @@ pub fn template_proof(
     write(output_fname, template).unwrap();
 }
 
-pub fn proof_as_input(journal: &Vec<u8>, seal: &String) {
-    let seal = get_seal(seal);
+pub fn proof_as_input(proof_fname: &String) {
+    let (seal, journal) = get_seal_and_journal(proof_fname);
     let proofs = generate_proof_bytes_from_seal(seal);
 
     //hex encode journal and proofs

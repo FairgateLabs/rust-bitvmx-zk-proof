@@ -46,13 +46,9 @@ pub fn to_fixed_array(input: Vec<u8>) -> [u8; 32] {
 }
 
 pub fn get_image_id(image_id_path: &String) -> Digest {
-    let hex_str = std::fs::read_to_string(image_id_path)
-        .expect("Failed to read image id file");
-    let bytes = hex::decode(hex_str.trim())
-        .expect("Failed to decode hex image id");
-    Digest::from_bytes(
-        bytes.try_into().expect("Image id must be exactly 32 bytes"),
-    )
+    let hex_str = std::fs::read_to_string(image_id_path).expect("Failed to read image id file");
+    let bytes = hex::decode(hex_str.trim()).expect("Failed to decode hex image id");
+    Digest::from_bytes(bytes.try_into().expect("Image id must be exactly 32 bytes"))
 }
 
 pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
@@ -63,16 +59,17 @@ pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
     claim
 }
 
-pub fn get_seal(proof: &str) -> Seal {
+pub fn get_seal_and_journal(proof: &str) -> (Seal, Vec<u8>) {
     let mut file = std::fs::File::open(proof).unwrap();
     let mut json_content = String::new();
     file.read_to_string(&mut json_content).unwrap();
 
-    let seal_vec = ResultType::from_json_string(json_content)
-        .unwrap()
-        .get_seal();
+    let proof = ResultType::from_json_string(json_content).unwrap();
 
-    Seal::decode(&seal_vec).unwrap()
+    let seal_vec = proof.get_seal();
+    let journal = proof.get_journal();
+
+    (Seal::decode(&seal_vec).unwrap(), journal)
 }
 
 pub fn g1_to_c_bytes(mut g1: Vec<Vec<u8>>) -> Vec<u8> {
