@@ -97,8 +97,7 @@ pub fn template_setup(
 ) {
     let mut template = read_to_string(template_fname).unwrap();
 
-    let image_id = get_image_id(image_id_fname);
-    let claim_pre = Digest::new(image_id);
+    let claim_pre = get_image_id(image_id_fname);
 
     let params = get_default_parameters().unwrap();
     let root_id = params.control_root;

@@ -45,22 +45,18 @@ pub fn to_fixed_array(input: Vec<u8>) -> [u8; 32] {
     fixed_array
 }
 
-pub fn get_image_id(image_id: &String) -> [u32; 8] {
-    let mut file = std::fs::File::open(image_id).unwrap();
-    let mut image_id_json = String::new();
-    file.read_to_string(&mut image_id_json).unwrap();
-    let value = json::parse(&image_id_json).unwrap();
-    //map the vector inside values to [u32,8]
-    let mut image_id: [u32; 8] = [0; 8];
-    for (i, v) in value.members().enumerate() {
-        image_id[i] = v.as_u32().unwrap();
-    }
-    image_id
+pub fn get_image_id(image_id_path: &String) -> Digest {
+    let hex_str = std::fs::read_to_string(image_id_path)
+        .expect("Failed to read image id file");
+    let bytes = hex::decode(hex_str.trim())
+        .expect("Failed to decode hex image id");
+    Digest::from_bytes(
+        bytes.try_into().expect("Image id must be exactly 32 bytes"),
+    )
 }
 
 pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
-    let image_id = get_image_id(image_id);
-    let digest = Digest::new(image_id);
+    let digest = get_image_id(image_id);
 
     let journal_maybe = MaybePruned::Value(journal.clone());
     let claim = ReceiptClaim::ok(digest, journal_maybe);
