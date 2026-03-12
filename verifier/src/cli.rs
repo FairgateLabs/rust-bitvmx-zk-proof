@@ -67,6 +67,10 @@ enum Commands {
     },
 
     ProofAsInput {
+        /// File name with the dumped image id
+        #[arg(short, long, value_name = "FILE", required = true)]
+        image_id: String,
+
         /// Groth16 proof file
         #[arg(short, long, value_name = "FILE", required = true)]
         proof: String,
@@ -94,7 +98,7 @@ pub fn run() -> Result<(), VerificationError> {
             template,
             output,
         }) => template_proof(proof, template, output),
-        Some(Commands::ProofAsInput { proof }) => proof_as_input(proof),
+        Some(Commands::ProofAsInput { image_id, proof }) => proof_as_input(image_id, proof),
 
         None => {
             println!("No command provided");

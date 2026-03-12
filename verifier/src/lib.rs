@@ -228,15 +228,30 @@ pub fn template_proof(proof_fname: &String, template_fname: &String, output_fnam
     write(output_fname, template).unwrap();
 }
 
-pub fn proof_as_input(proof_fname: &String) {
+pub fn proof_as_input(image_id: &String, proof_fname: &String) {
+    let digest = get_image_id(image_id);
     let (seal, journal) = get_seal_and_journal(proof_fname);
     let proofs = generate_proof_bytes_from_seal(seal);
 
-    //hex encode journal and proofs
-    let journal_hex = hex::encode(journal);
-    print!("input: {}", journal_hex);
+    if journal.len() % 4 != 0 {
+        panic!("Journal length must be a multiple of 4 bytes");
+    }
+
+    //hex encode as one byte the number of words in the journal
+    let journal_len = (journal.len() / 4) as u8;
+    print!("input: {:02x}", journal_len);
+    //fill 3 empty bytes
+    print!("000000");
+
+    //dump the image_id as hex
+    let image_id_hex = hex::encode(digest.as_bytes());
+    print!("{}", image_id_hex);
+
     for proof in proofs {
         let proof_hex = hex::encode(proof);
         print!("{}", proof_hex);
     }
+    //hex encode journal and proofs
+    let journal_hex = hex::encode(journal);
+    print!("{}", journal_hex);
 }
