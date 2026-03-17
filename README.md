@@ -60,9 +60,13 @@ Option: (1) standard installation
 
 `cargo install cargo-binstall`
 
-`cargo binstall cargo-risczero --version 2.0.1`
+`cargo binstall cargo-risczero --version 3.0.4`
 
 `rzup install`
+
+We also provide 2 scripts to install risczero and the dependencies
+First run 'setup.sh'
+Then run 'install_risczero.sh'
 
 ### Risc0 Guest Build
 
