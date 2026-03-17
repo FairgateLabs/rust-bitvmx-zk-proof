@@ -64,9 +64,17 @@ Option: (1) standard installation
 
 `rzup install`
 
+
+#### Installation Scripts
+
 We also provide 2 scripts to install risczero and the dependencies
 First run 'setup.sh'
 Then run 'install_risczero.sh'
+
+#### Install AWS client
+
+When installed in Amazon EC2 is necessary to install the AWS client to allow the job-dispatcher to control the proof generation
+
 
 ### Risc0 Guest Build
 
