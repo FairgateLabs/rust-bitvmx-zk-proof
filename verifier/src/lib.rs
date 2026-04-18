@@ -238,7 +238,7 @@ pub fn proof_as_input(image_id: &String, proof_fname: &String) {
 
     //hex encode as one byte the number of words in the journal
     let journal_len = (journal.len() / 4) as u8;
-    print!("input: {:02x}", journal_len);
+    print!("{:02x}", journal_len);
     //fill 3 empty bytes
     print!("000000");
 
