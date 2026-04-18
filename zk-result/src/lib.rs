@@ -25,7 +25,7 @@ impl ResultType {
     pub fn get_seal(&self) -> Result<Vec<u8>, String> {
         match self {
             ResultType::ProveResult { seal, .. } => {
-                Seal::decode(&seal).and_then(|s| Ok(s.generate_proof_bytes_from_seal()))
+                ResultSeal::decode(&seal).and_then(|s| Ok(s.generate_proof_bytes_from_seal()))
             }
         }
     }
@@ -58,20 +58,20 @@ impl ResultType {
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-struct Seal {
+struct ResultSeal {
     a: Vec<Vec<u8>>,
     b: Vec<Vec<Vec<u8>>>,
     c: Vec<Vec<u8>>,
 }
 
-impl Seal {
+impl ResultSeal {
     const ELEMENT_SIZE: usize = 32;
     const G1_GROUP_SIZE: usize = Self::ELEMENT_SIZE * 2;
     const G2_GROUP_SIZE: usize = Self::ELEMENT_SIZE * 4;
     const SIZE: usize = Self::G1_GROUP_SIZE * 2 + Self::G2_GROUP_SIZE;
 
     /// Decode a seal from raw bytes.
-    pub fn decode(data: &[u8]) -> Result<Seal, String> {
+    pub fn decode(data: &[u8]) -> Result<ResultSeal, String> {
         if data.len() != Self::SIZE {
             return Err("Data length mismatch".to_string());
         }
@@ -103,7 +103,7 @@ impl Seal {
             offset += Self::ELEMENT_SIZE;
         }
 
-        Ok(Seal { a, b, c })
+        Ok(ResultSeal { a, b, c })
     }
 
     fn generate_proof_bytes_from_seal(&self) -> Vec<u8> {
