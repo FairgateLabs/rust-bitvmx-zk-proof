@@ -22,11 +22,17 @@ impl ResultType {
         Ok(result)
     }
 
-    pub fn get_seal(&self) -> Result<Vec<u8>, String> {
+    pub fn get_seal(&self) -> Result<Vec<Vec<u8>>, String> {
         match self {
             ResultType::ProveResult { seal, .. } => {
                 ResultSeal::decode(&seal).and_then(|s| Ok(s.generate_proof_bytes_from_seal()))
             }
+        }
+    }
+
+    pub fn get_seal_full(&self) -> Vec<u8> {
+        match self {
+            ResultType::ProveResult { seal, .. } => seal.clone(),
         }
     }
 
@@ -106,11 +112,11 @@ impl ResultSeal {
         Ok(ResultSeal { a, b, c })
     }
 
-    fn generate_proof_bytes_from_seal(&self) -> Vec<u8> {
+    fn generate_proof_bytes_from_seal(&self) -> Vec<Vec<u8>> {
         let bytes_proof_a = Self::g1_to_c_bytes(self.a.clone());
         let bytes_proof_b = Self::g2_to_c_bytes(self.b.clone());
         let bytes_proof_c = Self::g1_to_c_bytes(self.c.clone());
-        [bytes_proof_a, bytes_proof_b, bytes_proof_c].concat()
+        vec![bytes_proof_a, bytes_proof_b, bytes_proof_c]
     }
 
     fn g1_to_c_bytes(mut g1: Vec<Vec<u8>>) -> Vec<u8> {
@@ -155,6 +161,6 @@ mod test {
         let expected =  "391c2bcb0ce5ee75955a9f934e6fe3f8741df14c24e5aa3047967350299a331df71c0b8404abd565633d37910b29e014b624b9899fa527d085e729e283e7650475bd3e656c62d1dd87125db42326522d09f93c74600e32bb685f23f75425a2aa04eb448e3a8cca6181eebcdf6a96d1a216ea93c11b61f6424928ecf2a6992e95";
         let expected_bytes = hex::decode(expected).unwrap();
 
-        assert_eq!(result.get_seal().unwrap(), expected_bytes);
+        assert_eq!(result.get_seal().unwrap().concat(), expected_bytes);
     }
 }

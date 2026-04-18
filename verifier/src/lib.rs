@@ -15,14 +15,6 @@ use std::vec;
 
 use crate::format::*;
 
-pub fn generate_proof_bytes_from_seal(seal: Seal) -> Vec<Vec<u8>> {
-    let bytes_proof_a = g1_to_c_bytes(seal.a.clone());
-    let bytes_proof_b = g2_to_c_bytes(seal.b.clone());
-    let bytes_proof_c = g1_to_c_bytes(seal.c.clone());
-
-    vec![bytes_proof_a, bytes_proof_b, bytes_proof_c]
-}
-
 fn show_claim(image_id: &String, journal: &Vec<u8>) {
     let claim = get_claim(image_id, journal);
     let digest = claim.digest();
@@ -39,7 +31,11 @@ fn get_default_parameters() -> Result<Groth16ReceiptVerifierParameters, Verifica
 }
 
 fn verify(image_id: &String, proof_fname: &String) -> Result<(), VerificationError> {
-    let (seal, journal) = get_seal_and_journal(&proof_fname);
+    let proof = get_seal_and_journal(&proof_fname);
+    let journal = proof.get_journal();
+
+    let seal = Seal::decode(&proof.get_seal_full()).unwrap();
+
     let claim = get_claim(image_id, &journal);
     let params = get_default_parameters()?;
 
@@ -217,8 +213,10 @@ pub fn template_setup(
 pub fn template_proof(proof_fname: &String, template_fname: &String, output_fname: &String) {
     let mut template = read_to_string(template_fname).unwrap();
 
-    let (seal, journal) = get_seal_and_journal(proof_fname);
-    let proofs = generate_proof_bytes_from_seal(seal);
+    let proof = get_seal_and_journal(&proof_fname);
+    let journal = proof.get_journal();
+
+    let proofs = proof.get_seal().unwrap();
 
     template = template.replace("proof_a", &bytes_to_str(&proofs[0]));
     template = template.replace("proof_b", &bytes_to_str(&proofs[1]));
@@ -230,8 +228,9 @@ pub fn template_proof(proof_fname: &String, template_fname: &String, output_fnam
 
 pub fn proof_as_input(image_id: &String, proof_fname: &String) {
     let digest = get_image_id(image_id);
-    let (seal, journal) = get_seal_and_journal(proof_fname);
-    let proofs = generate_proof_bytes_from_seal(seal);
+    let proof_and_seal = get_seal_and_journal(proof_fname);
+    let journal = proof_and_seal.get_journal();
+    let proofs = proof_and_seal.get_seal();
 
     if journal.len() % 4 != 0 {
         panic!("Journal length must be a multiple of 4 bytes");
@@ -247,10 +246,9 @@ pub fn proof_as_input(image_id: &String, proof_fname: &String) {
     let image_id_hex = hex::encode(digest.as_bytes());
     print!("{}", image_id_hex);
 
-    for proof in proofs {
-        let proof_hex = hex::encode(proof);
-        print!("{}", proof_hex);
-    }
+    let proof_hex = hex::encode(proofs.unwrap().concat());
+    print!("{}", proof_hex);
+
     //hex encode journal and proofs
     let journal_hex = hex::encode(journal);
     print!("{}", journal_hex);

@@ -1,4 +1,3 @@
-use risc0_groth16::Seal;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkvm::{MaybePruned, Receipt, ReceiptClaim};
 use std::io::Read;
@@ -59,17 +58,14 @@ pub fn get_claim(image_id: &String, journal: &Vec<u8>) -> ReceiptClaim {
     claim
 }
 
-pub fn get_seal_and_journal(proof: &str) -> (Seal, Vec<u8>) {
+pub fn get_seal_and_journal(proof: &str) -> ResultType {
     let mut file = std::fs::File::open(proof).unwrap();
     let mut json_content = String::new();
     file.read_to_string(&mut json_content).unwrap();
 
     let proof = ResultType::from_json_string(json_content).unwrap();
 
-    let seal_vec = proof.get_seal();
-    let journal = proof.get_journal();
-
-    (Seal::decode(&seal_vec).unwrap(), journal)
+    proof
 }
 
 pub fn g1_to_c_bytes(mut g1: Vec<Vec<u8>>) -> Vec<u8> {

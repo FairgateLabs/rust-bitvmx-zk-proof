@@ -7,4 +7,4 @@ edition = "2021"
 risc0-build = { version = "3.0.4" }
 
 [package.metadata.risc0]
-methods = ["guest_sample"]
+methods = ["guest_sample", "proveall"]
