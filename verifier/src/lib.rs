@@ -253,3 +253,11 @@ pub fn proof_as_input(image_id: &String, proof_fname: &String) {
     let journal_hex = hex::encode(journal);
     print!("{}", journal_hex);
 }
+
+pub fn extract_seal(proof_fname: &String) {
+    let proof_and_seal = get_seal_and_journal(proof_fname);
+    let seal = proof_and_seal.get_seal().unwrap();
+
+    let proof_hex = hex::encode(seal.concat());
+    println!("{}", proof_hex);
+}
