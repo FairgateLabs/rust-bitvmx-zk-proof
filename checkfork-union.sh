@@ -1,7 +1,7 @@
 #cargo build --release 
 #cargo build --release --manifest-path ../BitVMX-CPU/Cargo.toml --bin emulator
 
-INPUT_CHECKFORK_ARGS=../../union-bridge-client/crates/check-fork/tester-artifacts/check_fork_args.bin
+INPUT_CHECKFORK_ARGS=../../union-bridge-client/tester-artifacts/check_fork_args.bin
 BIN_CHECKFORK=../../union-bridge-client/target/riscv-guest/check-fork-zkp/check-fork-guest/riscv32im-risc0-zkvm-elf/release/check-fork-guest.bin
 
 mkdir output
