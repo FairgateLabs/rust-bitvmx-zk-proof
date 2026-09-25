@@ -8,3 +8,7 @@ global-min-publish-age = "14 days"
 [[allow.exact]]
 crate = "chacha20"
 version = "0.10.2"
+
+[[allow.exact]]
+crate = "rustls"
+version = "0.23.45"
