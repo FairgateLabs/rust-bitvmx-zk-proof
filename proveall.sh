@@ -2,9 +2,9 @@
 #cargo build --release --manifest-path ../BitVMX-CPU/Cargo.toml --bin emulator
 mkdir output
 echo Dumping ELF ID
-target/release/host dump-id --elf target/riscv-guest/methods/proveall/riscv32im-risc0-zkvm-elf/release/proveall.bin --output output/proveall-id.hex
+target/release/host dump-id --elf target/riscv-guest/methods/proveall/riscv32im-risc0-zkvm-elf/docker/proveall.bin --output output/proveall-id.hex
 echo Generating stark proof
-target/release/host prove-stark --input input.hex --elf target/riscv-guest/methods/proveall/riscv32im-risc0-zkvm-elf/release/proveall.bin --output output/prove-all-stark.bin --json output/prove-all.json
+target/release/host prove-stark --input input.hex --elf target/riscv-guest/methods/proveall/riscv32im-risc0-zkvm-elf/docker/proveall.bin --output output/prove-all-stark.bin --json output/prove-all.json
 echo Converting into snark
 target/release/host prove-snark --input output/prove-all-stark.bin --json output/prove-all.json 
 echo Converting into input for the emulator

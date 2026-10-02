@@ -1,6 +1,4 @@
 .DS_Store
-methods/guest_sample/Cargo.lock
-proveall/guest_sample/Cargo.lock
 target/
 **/.idea
 output/
