@@ -1,4 +1,4 @@
-#cargo build --release 
+#cargo build --release
 #cargo build --release --manifest-path ../BitVMX-CPU/Cargo.toml --bin emulator
 
 INPUT_CHECKFORK_ARGS=../../union-bridge-client/tester-artifacts/check_fork_args.bin
@@ -11,7 +11,7 @@ target/release/host dump-id --elf $BIN_CHECKFORK --output output/checkfork-id.he
 echo Generating stark proof
 target/release/host prove-stark --input $INPUT_CHECKFORK_ARGS --elf $BIN_CHECKFORK --output output/prove-checkfork-stark.bin --json output/prove-checkfork-stark.json
 echo Converting into snark
-target/release/host prove-snark --input output/prove-checkfork-stark.bin --json output/prove-checkfork-snark.json 
+target/release/host prove-snark --input output/prove-checkfork-stark.bin --json output/prove-checkfork-snark.json
 echo Converting into input for the emulator
 # prepares inputs for the Emulator (Emulator verifies the groth16 snark proof)
 target/release/verifier proof-as-input --image-id output/checkfork-id.hex --proof output/prove-checkfork-snark.json > output/prove-checkfork-input.hex
