@@ -8,11 +8,13 @@ const RISC0_DOCKER_IMAGE: &str =
 
 fn main() {
     let skip_build = std::env::var("RISC0_SKIP_BUILD").is_ok_and(|value| !value.is_empty());
-    let release_build = std::env::var("PROFILE").is_ok_and(|profile| profile == "release");
-    assert!(
-        !skip_build || !release_build,
-        "RISC0_SKIP_BUILD cannot be used for release builds"
-    );
+    if skip_build {
+        println!(
+            "cargo:warning=RISC0_SKIP_BUILD is set: guest programs will not be rebuilt. \
+             Generated ELF constants will be empty and image IDs will be zero. \
+             Existing guest binaries on disk are left unchanged."
+        );
+    }
 
     if let Ok(tag) = std::env::var("RISC0_DOCKER_CONTAINER_TAG") {
         assert_eq!(
