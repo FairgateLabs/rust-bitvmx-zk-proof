@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::{proof_as_input, show_claim, template_proof, template_setup, verify};
+use crate::{extract_seal, proof_as_input, show_claim, template_proof, template_setup, verify};
 use risc0_zkp::verify::VerificationError;
 
 #[derive(Parser)]
@@ -75,6 +75,12 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", required = true)]
         proof: String,
     },
+
+    ExtractSeal {
+        /// Groth16 proof file
+        #[arg(short, long, value_name = "FILE", required = true)]
+        proof: String,
+    },
 }
 
 pub fn run() -> Result<(), VerificationError> {
@@ -99,6 +105,7 @@ pub fn run() -> Result<(), VerificationError> {
             output,
         }) => template_proof(proof, template, output),
         Some(Commands::ProofAsInput { image_id, proof }) => proof_as_input(image_id, proof),
+        Some(Commands::ExtractSeal { proof }) => extract_seal(proof),
 
         None => {
             println!("No command provided");
