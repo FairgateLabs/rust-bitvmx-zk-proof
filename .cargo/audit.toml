@@ -1,0 +1,26 @@
+[advisories]
+ignore = [
+    # rsa 0.9.10 is required by rzup 0.5.2 through risc0-zkvm 3.0.6.
+    # The fixed rsa 0.10 API is incompatible with rzup's ^0.9 requirement.
+    # Re-evaluate when a stable RISC Zero release upgrades rzup/rsa.
+    "RUSTSEC-2023-0071",
+
+    # ruzstd 0.7.3 is required by object 0.36.7 through risc0-zkvm 3.0.6.
+    # object requires ruzstd ^0.7 and cannot accept the fixed 0.9 release.
+    "RUSTSEC-2026-0344",
+
+    # tracing-subscriber 0.2.25 is required by ark-relations 0.5.1 through
+    # ark-groth16/risc0-groth16. The fixed 0.3 API is incompatible with the
+    # upstream ^0.2 requirement.
+    "RUSTSEC-2025-0055",
+
+    # zip 2.6.1 is required by risc0-circuit-recursion 4.0.5 through
+    # risc0-zkvm 3.0.6. The fixed zip 9.x API is incompatible with the
+    # upstream ^2.1 requirement. These advisories all affect that same copy.
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0429",
+    "RUSTSEC-2026-0545",
+    "RUSTSEC-2026-0548",
+]
