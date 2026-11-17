@@ -24,8 +24,8 @@ pub fn deserialize_receipt(name: &str) -> Receipt {
 }
 
 pub fn prove_stark(input: &str, elf_path: &str, output_file: &str) -> Result<(), String> {
-    let input_parsed = std::fs::read(input)
-        .map_err(|e| format!("Failed to read input file: {}", e))?;
+    let input_parsed =
+        std::fs::read(input).map_err(|e| format!("Failed to read input file: {}", e))?;
     let start = std::time::Instant::now();
 
     let env = ExecutorEnv::builder()
@@ -61,7 +61,8 @@ pub fn prove_stark(input: &str, elf_path: &str, output_file: &str) -> Result<(),
 
 pub fn verify_stark(image_id: impl Into<Digest>, receipt_fname: &str) -> Result<(), String> {
     let receipt = deserialize_receipt(receipt_fname);
-    receipt.verify(image_id)
+    receipt
+        .verify(image_id)
         .map_err(|e| format!("Failed to verify receipt: {}", e))?;
 
     Ok(())

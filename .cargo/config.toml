@@ -1,0 +1,3 @@
+[env]
+# Build the guests in one canonical environment on every supported host architecture.
+DOCKER_DEFAULT_PLATFORM = { value = "linux/amd64", force = true }
