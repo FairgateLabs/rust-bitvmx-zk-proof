@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = { version = "3.1.0", features = ["prove"] }
-methods = { path = "../methods" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
 serde_json = "1.0"
