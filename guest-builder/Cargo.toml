@@ -1,0 +1,12 @@
+[package]
+name = "guest-builder"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-build = { version = "3.0.7" }
+risc0-binfmt = { version = "3.0.6" }
+risc0-zkos-v1compat = { version = "2.2.3" }
+clap = { version = "4.5.8", features = ["derive"] }
+hex = "0.4"
+toml = "0.8"

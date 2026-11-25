@@ -1630,6 +1630,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
 
 [[package]]
+name = "guest-builder"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "hex",
+ "risc0-binfmt",
+ "risc0-build",
+ "risc0-zkos-v1compat",
+ "toml",
+]
+
+[[package]]
 name = "hash32"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -191,7 +191,18 @@ Below are the steps as a reference, but bear in mind that the up-to-date instruc
       1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --no-hash --debug`
    2. _Proof as Input_. Now we will use the hex generated on _Proof to Input Hex_ step as input, because `constants.h` does not contain it.
       1. within `BitVMX-CPU` repository run: `cargo run --release -p emulator execute --elf ./docker-riscv32/verifier/build/zkverifier-new-mul.elf --input <output-from-proof-to-input-hex-step> --no-hash --debug`
-      
+
+## Reproducible guest and prover image
+
+`scripts/build-guest.sh <guest Cargo.toml> <root> <output .bin>` builds a guest in the docker image of risc0-build, so
+the same source gives the same `.bin` and image id on any machine, and prints the image id. It needs docker.
+
+`scripts/build-ami.sh` builds the GPU prover image (AMI) that the job dispatcher launches, from Ubuntu 24.04 and with
+one command: it runs `scripts/setup-prover.sh` on a g4dn instance through SSM, proves a test input when one is given,
+creates the AMI and terminates the instance. The variables it takes are described at the top of the script, for example:
+
+`BUCKET=<bucket> INSTANCE_PROFILE=<profile> GUEST_BIN=guests/check-fork-guest.bin TEST_INPUT=<input> scripts/build-ami.sh`
+
 ## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
