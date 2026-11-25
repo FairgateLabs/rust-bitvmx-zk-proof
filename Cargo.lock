@@ -1727,6 +1727,7 @@ dependencies = [
  "clap",
  "cli_serde",
  "hex",
+ "risc0-groth16",
  "risc0-zkvm",
  "serde",
  "serde_json",

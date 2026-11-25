@@ -134,6 +134,23 @@ Check running `docker` works fine. In that case run this command:
 If not, try runnign it in this way:
 `sudo RISC0_WORK_DIR=./ RUST_LOG=debug ./target/release/host prove-snark --input stark-proof.bin --json output.json`
 
+#### Proving with a GPU
+
+`prove-snark` joins the proofs of all the segments (the recursion) on the cpu, which dominates the time of a large input.
+With a GPU, the work splits in two commands: the cuda build (`cargo build --release -p host --features risc0-zkvm/cuda`)
+proves the segments, joins them into one succinct proof and runs the identity_p254 step, and the cpu build makes the
+groth16 wrap in docker (the cuda groth16 prover crashes on the T4 with `an illegal memory access was encountered`, a
+known bug of risc0-groth16 3.0.x on every GPU: [risc0#3785](https://github.com/risc0/risc0/issues/3785)).
+
+`<cuda build>/host prove-succinct --input <input_file> --elf <elf_file_path> --output succinct.bin --json succinct.json --p254-seal p254.seal`
+
+`<cpu build>/host wrap-groth16 --input succinct.bin --p254-seal p254.seal --json output.json --json-input succinct.json`
+
+`output.json` has the same format as the one of `prove-snark`.
+
+The cuda build needs a GPU: without one it stops with a panic when it starts CUDA. On a machine without a GPU, the
+cpu build runs both commands, which is what the job dispatcher does when no GPU answers.
+
 ### Verifiying
 
 `cargo run --release --bin verifier -- verify -i image_id.json --journal 1,0,0,0 --seal output.json`
