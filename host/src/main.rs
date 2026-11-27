@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 
 use clap::{Parser, Subcommand};
 use cli_serde::{deserialize_image_id, load_elf};
-use host::{prove_snark, prove_stark, verify_stark};
+use host::{prove_snark, prove_stark, prove_succinct, verify_stark, wrap_groth16};
 use risc0_zkvm::compute_image_id;
 use tracing_subscriber::EnvFilter;
 use zk_result::ResultType;
@@ -51,6 +51,48 @@ enum Commands {
         /// Stark proof file
         #[arg(short, long, value_name = "FILE")]
         input: String,
+
+        /// Output JSON file
+        #[arg(short, long, value_name = "JSON_FILE")]
+        json: String,
+
+        /// JSON Input Condition File
+        #[arg(short, long, value_name = "JSON_FILE")]
+        json_input: Option<String>,
+    },
+
+    /// Generate the stark proof and compress it into a single succinct proof
+    ProveSuccinct {
+        /// Input that proves the stark
+        #[arg(short, long, value_name = "INPUT_FILE")]
+        input: String,
+
+        /// ELF file path
+        #[arg(short, long, value_name = "ELF_FILE")]
+        elf: String,
+
+        /// Output Proof file
+        #[arg(short, long, value_name = "OUTPUT_FILE")]
+        output: String,
+
+        /// Output JSON file
+        #[arg(short, long, value_name = "JSON_FILE")]
+        json: Option<String>,
+
+        /// Also run identity_p254 and write its seal to this file, for wrap-groth16
+        #[arg(long, value_name = "FILE")]
+        p254_seal: Option<String>,
+    },
+
+    /// Turn the identity_p254 seal of prove-succinct into a groth16 proof
+    WrapGroth16 {
+        /// Succinct proof file written by prove-succinct
+        #[arg(short, long, value_name = "FILE")]
+        input: String,
+
+        /// identity_p254 seal file written by prove-succinct
+        #[arg(long, value_name = "FILE")]
+        p254_seal: String,
 
         /// Output JSON file
         #[arg(short, long, value_name = "JSON_FILE")]
@@ -155,6 +197,65 @@ fn main() {
             .expect("Failed to serialize result to JSON");
 
             file.write_all(json_result.to_string().as_bytes())
+                .expect("Failed to write JSON to file");
+        }
+        Some(Commands::ProveSuccinct {
+            input,
+            elf,
+            output,
+            json,
+            p254_seal,
+        }) => {
+            let result = prove_succinct(input, elf, output, p254_seal.as_deref());
+            match json {
+                Some(json) => {
+                    let mut file = create_or_open_file(json, true);
+                    let status = match result {
+                        Ok(_) => "OK".to_string(),
+                        Err(e) => e,
+                    };
+                    let json_result = serde_json::to_string(&ResultType::ProveResult {
+                        seal: Vec::new(),
+                        journal: Vec::new(),
+                        status,
+                    })
+                    .expect("Failed to serialize result to JSON");
+                    file.write_all(json_result.as_bytes())
+                        .expect("Failed to write JSON to file");
+                }
+                None => {
+                    if let Err(e) = result {
+                        println!("Error: {}", e);
+                    }
+                }
+            }
+        }
+        Some(Commands::WrapGroth16 {
+            input,
+            p254_seal,
+            json,
+            json_input,
+        }) => {
+            if let Some(input_json_file) = json_input {
+                validate_json_status(input_json_file);
+            }
+
+            let mut file = create_or_open_file(json, true);
+            let json_result = match wrap_groth16(input, p254_seal) {
+                Ok((seal, journal)) => serde_json::to_string(&ResultType::ProveResult {
+                    seal,
+                    journal,
+                    status: "OK".to_string(),
+                }),
+                Err(e) => serde_json::to_string(&ResultType::ProveResult {
+                    seal: Vec::new(),
+                    journal: Vec::new(),
+                    status: e,
+                }),
+            }
+            .expect("Failed to serialize result to JSON");
+
+            file.write_all(json_result.as_bytes())
                 .expect("Failed to write JSON to file");
         }
         Some(Commands::DumpId { elf, output }) => {
